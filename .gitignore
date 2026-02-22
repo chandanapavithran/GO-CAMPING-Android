@@ -1,0 +1,31 @@
+# Created by Studio
+
+# This file should be committed to your version control system.
+# It should be shared between all developers working on this project.
+
+# Note: this .gitignore file is not for local, machine-specific settings.
+# Such settings should be stored in a separate file that is not committed.
+# For more information, see https://www.atlassian.com/git/tutorials/saving-changes/gitignore
+
+# User-specific files
+*.user
+*.suo
+*.sln.docstates
+
+# Build files
+/build
+/app/build
+
+# Local properties
+/local.properties
+
+# Gradle files
+/.gradle
+/gradlew
+/gradlew.bat
+/gradle/wrapper/gradle-wrapper.jar
+/gradle/wrapper/gradle-wrapper.properties
+
+# IDE files
+.idea/
+*.iml
