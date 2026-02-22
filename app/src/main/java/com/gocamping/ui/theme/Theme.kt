@@ -17,23 +17,25 @@ import androidx.compose.ui.platform.LocalView
 import androidx.core.view.WindowCompat
 
 private val DarkColorScheme = darkColorScheme(
-    primary = ForestGreen,
-    secondary = SunsetOrange,
-    tertiary = LightSage,
-    background = Color(0xFF121212),
-    surface = Color(0xFF1E1E1E)
+    primary = ElectricPurple,
+    secondary = BrightCyan,
+    tertiary = SoftPink,
+    background = BackgroundDark,
+    surface = SurfaceDark,
+    error = ErrorRed
 )
 
 private val LightColorScheme = lightColorScheme(
-    primary = ForestGreen,
-    secondary = SunsetOrange,
-    tertiary = EarthyBrown,
-    background = SandBeige,
-    surface = Color.White
+    primary = ElectricPurple,
+    secondary = BrightCyan,
+    tertiary = VividOrange,
+    background = BackgroundLight,
+    surface = SurfaceLight,
+    error = ErrorRed
 
     /* Other default colors to override
     onPrimary = Color.White,
-    onSecondary = Color.White,
+    onSecondary = Color.Black,
     onTertiary = Color.White,
     onBackground = Color(0xFF1C1B1F),
     onSurface = Color(0xFF1C1B1F),
@@ -43,8 +45,8 @@ private val LightColorScheme = lightColorScheme(
 @Composable
 fun CampingTheme(
     darkTheme: Boolean = isSystemInDarkTheme(),
-    // Dynamic color is available on Android 12+
-    dynamicColor: Boolean = true,
+    // Disable dynamic color by default to keep the colourful aesthetic
+    dynamicColor: Boolean = false,
     content: @Composable () -> Unit
 ) {
     val colorScheme = when {
@@ -60,7 +62,7 @@ fun CampingTheme(
         SideEffect {
             val window = (view.context as Activity).window
             window.statusBarColor = colorScheme.primary.toArgb()
-            WindowCompat.getInsetsController(window, view).isAppearanceLightStatusBars = darkTheme
+            WindowCompat.getInsetsController(window, view).isAppearanceLightStatusBars = !darkTheme
         }
     }
 

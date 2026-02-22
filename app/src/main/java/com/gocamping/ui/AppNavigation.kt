@@ -38,17 +38,45 @@ fun AppNavigation(navController: NavHostController = rememberNavController()) {
             )
         }
         composable(Screen.RegisterStudent.route) {
-            StudentRegistrationScreen(onRegisterSuccess = { navController.navigate(Screen.Login.route) })
+            StudentRegistrationScreen(
+                onRegisterSuccess = { navController.navigate(Screen.Login.route) },
+                onNavigateBack = { navController.popBackStack() }
+            )
         }
-        // Staff and Parent reg placeholders
-        composable(Screen.RegisterStaff.route) { Text("Staff Registration Coming Soon") }
-        composable(Screen.RegisterParent.route) { Text("Parent Registration Coming Soon") }
+        composable(Screen.RegisterStaff.route) {
+            StaffRegistrationScreen(
+                onRegisterSuccess = { navController.navigate(Screen.Login.route) },
+                onNavigateBack = { navController.popBackStack() }
+            )
+        }
+        composable(Screen.RegisterParent.route) {
+            ParentRegistrationScreen(
+                onRegisterSuccess = { navController.navigate(Screen.Login.route) },
+                onNavigateBack = { navController.popBackStack() }
+            )
+        }
         
-        // Dashboard placeholders
-        composable(Screen.StudentDashboard.route) { Text("Student Dashboard Coming Soon") }
-        composable(Screen.StaffDashboard.route) { 
-            StaffDashboardScreen(onLogout = { navController.navigate(Screen.Login.route) })
+        // Functional Dashboards
+        composable(Screen.StudentDashboard.route) { 
+            StudentDashboardScreen(onLogout = { 
+                navController.navigate(Screen.Login.route) {
+                    popUpTo(Screen.StudentDashboard.route) { inclusive = true }
+                }
+            }) 
         }
-        composable(Screen.ParentDashboard.route) { Text("Parent Dashboard Coming Soon") }
+        composable(Screen.StaffDashboard.route) { 
+            StaffDashboardScreen(onLogout = { 
+                navController.navigate(Screen.Login.route) {
+                    popUpTo(Screen.StaffDashboard.route) { inclusive = true }
+                }
+            }) 
+        }
+        composable(Screen.ParentDashboard.route) { 
+            ParentDashboardScreen(onLogout = { 
+                navController.navigate(Screen.Login.route) {
+                    popUpTo(Screen.ParentDashboard.route) { inclusive = true }
+                }
+            }) 
+        }
     }
 }
