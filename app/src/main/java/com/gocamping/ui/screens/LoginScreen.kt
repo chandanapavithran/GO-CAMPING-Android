@@ -195,8 +195,8 @@ fun LoginScreen(
                 
                 Spacer(modifier = Modifier.height(16.dp))
                 
-                TextButton(onClick = { /* Forgot password action */ }) {
-                    Text("Forgot Password?", color = CampingTextDark.copy(alpha = 0.7f))
+                TextButton(onClick = { onNavigateToRegister() }) {
+                    Text("Don't have an account create one", color = CampingTextDark.copy(alpha = 0.7f))
                 }
             }
         }

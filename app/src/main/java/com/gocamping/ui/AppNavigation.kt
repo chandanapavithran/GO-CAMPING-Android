@@ -60,21 +60,39 @@ fun AppNavigation(navController: NavHostController = rememberNavController()) {
         }
         composable(Screen.RegisterStudent.route) {
             StudentRegistrationScreen(
-                onRegisterSuccess = { navController.navigate(Screen.Login.route) },
+                onRegisterSuccess = { role, id ->
+                    currentUserRole = role
+                    currentUserId = id
+                    navController.navigate(Screen.StudentDashboard.route) {
+                        popUpTo(Screen.Login.route) { inclusive = true }
+                    }
+                },
                 onNavigateBack = { navController.popBackStack() },
                 dao = dao
             )
         }
         composable(Screen.RegisterStaff.route) {
             StaffRegistrationScreen(
-                onRegisterSuccess = { navController.navigate(Screen.Login.route) },
+                onRegisterSuccess = { role, id ->
+                    currentUserRole = role
+                    currentUserId = id
+                    navController.navigate(Screen.StaffDashboard.route) {
+                        popUpTo(Screen.Login.route) { inclusive = true }
+                    }
+                },
                 onNavigateBack = { navController.popBackStack() },
                 dao = dao
             )
         }
         composable(Screen.RegisterParent.route) {
             ParentRegistrationScreen(
-                onRegisterSuccess = { navController.navigate(Screen.Login.route) },
+                onRegisterSuccess = { role, id ->
+                    currentUserRole = role
+                    currentUserId = id
+                    navController.navigate(Screen.ParentDashboard.route) {
+                        popUpTo(Screen.Login.route) { inclusive = true }
+                    }
+                },
                 onNavigateBack = { navController.popBackStack() },
                 dao = dao
             )

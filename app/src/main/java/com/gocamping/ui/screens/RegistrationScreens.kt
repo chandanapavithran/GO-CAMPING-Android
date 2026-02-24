@@ -90,7 +90,7 @@ fun RoleRegistrationButton(role: String, color: Color, onClick: (String) -> Unit
 }
 
 @Composable
-fun StaffRegistrationScreen(onRegisterSuccess: () -> Unit, onNavigateBack: () -> Unit, dao: com.gocamping.data.AppDao) {
+fun StaffRegistrationScreen(onRegisterSuccess: (String, String) -> Unit, onNavigateBack: () -> Unit, dao: com.gocamping.data.AppDao) {
     val staffPalette = listOf(Color(0xFF1A237E), Color(0xFF3F51B5))
     var department by remember { mutableStateOf("") }
     
@@ -117,7 +117,7 @@ fun StaffRegistrationScreen(onRegisterSuccess: () -> Unit, onNavigateBack: () ->
 }
 
 @Composable
-fun ParentRegistrationScreen(onRegisterSuccess: () -> Unit, onNavigateBack: () -> Unit, dao: com.gocamping.data.AppDao) {
+fun ParentRegistrationScreen(onRegisterSuccess: (String, String) -> Unit, onNavigateBack: () -> Unit, dao: com.gocamping.data.AppDao) {
     val parentPalette = listOf(Color(0xFF006064), Color(0xFF0097A7))
     var studentId by remember { mutableStateOf("") }
     
@@ -144,7 +144,7 @@ fun ParentRegistrationScreen(onRegisterSuccess: () -> Unit, onNavigateBack: () -
 }
 
 @Composable
-fun StudentRegistrationScreen(onRegisterSuccess: () -> Unit, onNavigateBack: () -> Unit, dao: com.gocamping.data.AppDao) {
+fun StudentRegistrationScreen(onRegisterSuccess: (String, String) -> Unit, onNavigateBack: () -> Unit, dao: com.gocamping.data.AppDao) {
     val studentPalette = listOf(ElectricPurple, BrightCyan)
     var className by remember { mutableStateOf("") }
     var address by remember { mutableStateOf("") }
@@ -185,7 +185,7 @@ fun RegistrationFormBase(
     title: String,
     subtitle: String,
     palette: List<Color>,
-    onRegisterSuccess: () -> Unit,
+    onRegisterSuccess: (String, String) -> Unit,
     onNavigateBack: () -> Unit,
     dao: com.gocamping.data.AppDao,
     role: String,
@@ -257,7 +257,7 @@ fun RegistrationFormBase(
                             )
                             dao.insertUser(user)
                             with(kotlinx.coroutines.Dispatchers.Main) {
-                                onRegisterSuccess()
+                                onRegisterSuccess(role, id)
                             }
                         }
                     },
