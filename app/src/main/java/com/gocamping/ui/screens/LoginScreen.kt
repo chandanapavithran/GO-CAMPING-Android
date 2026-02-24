@@ -43,6 +43,16 @@ fun LoginScreen(
     Box(
         modifier = Modifier.fillMaxSize()
     ) {
+        // Bottom Wave (Moved to background)
+        Image(
+            painter = painterResource(id = R.drawable.bg_wave),
+            contentDescription = null,
+            modifier = Modifier
+                .fillMaxWidth()
+                .align(Alignment.BottomCenter),
+            contentScale = ContentScale.FillWidth
+        )
+
         Column(modifier = Modifier.fillMaxSize()) {
             // Header
             Row(
@@ -200,15 +210,5 @@ fun LoginScreen(
                 }
             }
         }
-
-        // Bottom Wave
-        Image(
-            painter = painterResource(id = R.drawable.bg_wave),
-            contentDescription = null,
-            modifier = Modifier
-                .fillMaxWidth()
-                .align(Alignment.BottomCenter),
-            contentScale = ContentScale.FillWidth
-        )
     }
 }
