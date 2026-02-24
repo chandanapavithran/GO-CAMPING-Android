@@ -50,7 +50,7 @@ fun LoginScreen(
                     .fillMaxWidth()
                     .background(CampingGreenHeader)
                     .padding(16.dp),
-                verticalAlignment = Alignment.CenterHorizontally
+                verticalAlignment = Alignment.CenterVertically
             ) {
                 IconButton(onClick = { /* Back Not implemented in original but arrow is in image */ }) {
                     Icon(Icons.Default.ArrowBack, contentDescription = "Back", tint = Color.White)

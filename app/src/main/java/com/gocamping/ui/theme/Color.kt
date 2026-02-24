@@ -24,3 +24,5 @@ val CampingGreen = Color(0xFF2E7D32)
 val CampingIvory = Color(0xFFFDFCF0)
 val CampingGreenHeader = Color(0xFF1B5E20)
 val CampingTextDark = Color(0xFF1B4332)
+val ForestGreenDeep = Color(0xFF084D0E)
+
