@@ -14,55 +14,129 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.compose.foundation.*
+import androidx.compose.ui.graphics.Color
 import com.gocamping.ui.theme.*
+import com.gocamping.ui.Screen
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun StudentDashboardScreen(onLogout: () -> Unit) {
+fun StudentDashboardScreen(onLogout: () -> Unit, onNavigateToModule: (String) -> Unit) {
     DashboardBase("Student Portal", onLogout) {
+        item { HeaderSection("Welcome Camper!", "Track your journey and stay updated") }
+        
         item {
-            HeaderSection("Welcome back, Explorer!", "You have 2 active camps this week.")
+            DashboardCard(
+                "My Attendance",
+                Icons.Default.CheckCircle,
+                "Check your daily presence records",
+                SuccessGreen
+            ) { onNavigateToModule(Screen.Attendance.route) }
         }
         item {
-            DashboardCard("My Camps", Icons.Default.Terrain, "View your registered camps", ElectricPurple)
+            DashboardCard(
+                "Camp Alerts",
+                Icons.Default.Notifications,
+                "Stay updated with latest announcements",
+                VividOrange
+            ) { onNavigateToModule(Screen.Alert.route) }
         }
         item {
-            DashboardCard("Activities", Icons.Default.Flag, "Check today's schedule", BrightCyan)
-        }
-        item {
-            DashboardCard("My Badges", Icons.Default.Star, "You earned 5 badges!", VividOrange)
-        }
-        item {
-            DashboardCard("Safety Tips", Icons.Default.Info, "Camping essentials", SuccessGreen)
+            DashboardCard(
+                "Give Feedback",
+                Icons.Default.Email,
+                "Share your experience with us",
+                ElectricPurple
+            ) { onNavigateToModule(Screen.Feedback.route) }
         }
     }
 }
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun StaffDashboardScreen(onLogout: () -> Unit) {
-    DashboardBase("Staff Dashboard", onLogout) {
+fun StaffDashboardScreen(onLogout: () -> Unit, onNavigateToModule: (String) -> Unit) {
+    DashboardBase("Staff Command Center", onLogout) {
+        item { HeaderSection("Camp Leader Dashboard", "Manage operations and safety") }
+        
         item {
-            HeaderSection("Staff Overview", "Manage attendance and alerts for your groups.")
+            DashboardCard(
+                "Mark Attendance",
+                Icons.Default.Edit,
+                "Record daily student presence",
+                BrightCyan
+            ) { onNavigateToModule(Screen.Attendance.route) }
         }
-        item { DashboardCard("Attendance", Icons.Default.CheckCircle, "Mark student presence", SuccessGreen) }
-        item { DashboardCard("Emergency Alerts", Icons.Default.Warning, "Broadcast message", ErrorRed) }
-        item { DashboardCard("Group Management", Icons.Default.Groups, "View assigned students", BrightCyan) }
-        item { DashboardCard("Logistics", Icons.Default.LocalShipping, "Check equipment status", ElectricPurple) }
+        item {
+            DashboardCard(
+                "Monitor Payments",
+                Icons.Default.ShoppingCart,
+                "Track student and parent transactions",
+                SuccessGreen
+            ) { onNavigateToModule(Screen.Payment.route) }
+        }
+        item {
+            DashboardCard(
+                "Send Alerts",
+                Icons.Default.Warning,
+                "Broadcast important messages",
+                ErrorRed
+            ) { onNavigateToModule(Screen.Alert.route) }
+        }
+        item {
+            DashboardCard(
+                "Review Feedback",
+                Icons.Default.Email,
+                "Analyze camper thoughts and suggestions",
+                ElectricPurple
+            ) { onNavigateToModule(Screen.Feedback.route) }
+        }
+        item {
+            DashboardCard(
+                "Data Archiving",
+                Icons.Default.CloudSync,
+                "Manage historical records and cleanup",
+                Color.Gray
+            ) { onNavigateToModule(Screen.Archiving.route) }
+        }
     }
 }
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun ParentDashboardScreen(onLogout: () -> Unit) {
+fun ParentDashboardScreen(onLogout: () -> Unit, onNavigateToModule: (String) -> Unit) {
     DashboardBase("Parent Portal", onLogout) {
+        item { HeaderSection("Stay Connected", "Monitor your child's camp activities") }
+        
         item {
-            HeaderSection("Child Monitoring", "Track your child's camping adventure.")
+            DashboardCard(
+                "Attendance Tracker",
+                Icons.Default.CheckCircle,
+                "View child's attendance records",
+                SuccessGreen
+            ) { onNavigateToModule(Screen.Attendance.route) }
         }
-        item { DashboardCard("Safety Tracker", Icons.Default.LocationOn, "Real-time location pulse", SuccessGreen) }
-        item { DashboardCard("Payment History", Icons.Default.Payments, "Manage fees and invoices", VividOrange) }
-        item { DashboardCard("Camp Media", Icons.Default.PhotoLibrary, "View photos of your child", SoftPink) }
-        item { DashboardCard("Direct Contact", Icons.Default.ContactSupport, "Message camp lead", BrightCyan) }
+        item {
+            DashboardCard(
+                "Camp Payments",
+                Icons.Default.Payments,
+                "Make and track camp-related payments",
+                BrightCyan
+            ) { onNavigateToModule(Screen.Payment.route) }
+        }
+        item {
+            DashboardCard(
+                "Safety Alerts",
+                Icons.Default.Notifications,
+                "Receive urgent updates and reminders",
+                VividOrange
+            ) { onNavigateToModule(Screen.Alert.route) }
+        }
+        item {
+            DashboardCard(
+                "Contact/Feedback",
+                Icons.Default.Email,
+                "Reach out to camp organizers",
+                ElectricPurple
+            ) { onNavigateToModule(Screen.Feedback.route) }
+        }
     }
 }
 
@@ -75,13 +149,14 @@ fun DashboardBase(title: String, onLogout: () -> Unit, content: LazyListScope.()
                 title = { Text(title, fontWeight = FontWeight.Bold) },
                 actions = {
                     IconButton(onClick = onLogout) {
-                        Icon(Icons.Default.ExitToApp, contentDescription = "Logout")
+                        // Using Default.ExitToApp to match the existing code style and avoid import issues
+                        Icon(imageVector = Icons.Default.ExitToApp, contentDescription = "Logout")
                     }
                 },
                 colors = TopAppBarDefaults.topAppBarColors(
                     containerColor = MaterialTheme.colorScheme.primary,
-                    titleContentColor = MaterialTheme.colorScheme.onPrimary,
-                    actionIconContentColor = MaterialTheme.colorScheme.onPrimary
+                    titleContentColor = Color.White,
+                    actionIconContentColor = Color.White
                 )
             )
         }
@@ -90,7 +165,8 @@ fun DashboardBase(title: String, onLogout: () -> Unit, content: LazyListScope.()
             modifier = Modifier
                 .fillMaxSize()
                 .padding(padding)
-                .padding(16.dp),
+                .background(MaterialTheme.colorScheme.background),
+            contentPadding = PaddingValues(20.dp),
             verticalArrangement = Arrangement.spacedBy(16.dp),
             content = content
         )
@@ -100,15 +176,15 @@ fun DashboardBase(title: String, onLogout: () -> Unit, content: LazyListScope.()
 @Composable
 fun HeaderSection(title: String, subtitle: String) {
     Column(modifier = Modifier.padding(bottom = 8.dp)) {
-        Text(title, style = MaterialTheme.typography.headlineSmall, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.primary)
-        Text(subtitle, style = MaterialTheme.typography.bodyLarge, color = MaterialTheme.colorScheme.onSurfaceVariant)
+        Text(title, style = MaterialTheme.typography.headlineSmall, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onBackground)
+        Text(subtitle, style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
     }
 }
 
 @Composable
-fun DashboardCard(title: String, icon: ImageVector, description: String, iconColor: androidx.compose.ui.graphics.Color) {
+fun DashboardCard(title: String, icon: ImageVector, description: String, iconColor: Color, onClick: () -> Unit) {
     Card(
-        modifier = Modifier.fillMaxWidth(),
+        modifier = Modifier.fillMaxWidth().clickable(onClick = onClick),
         shape = RoundedCornerShape(16.dp),
         elevation = CardDefaults.cardElevation(defaultElevation = 4.dp),
         colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface)

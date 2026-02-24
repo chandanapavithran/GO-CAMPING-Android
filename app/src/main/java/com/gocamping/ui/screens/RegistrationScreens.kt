@@ -15,6 +15,12 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.unit.dp
 import com.gocamping.ui.theme.*
+import com.gocamping.ui.Screen
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.Dispatchers
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.ui.graphics.vector.ImageVector
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -83,49 +89,96 @@ fun RoleRegistrationButton(role: String, color: Color, onClick: (String) -> Unit
 }
 
 @Composable
-fun StaffRegistrationScreen(onRegisterSuccess: () -> Unit, onNavigateBack: () -> Unit) {
-    val staffPalette = listOf(Color(0xFF1A237E), Color(0xFF3F51B5)) // Professional Deep Blues
+fun StaffRegistrationScreen(onRegisterSuccess: () -> Unit, onNavigateBack: () -> Unit, dao: com.gocamping.data.AppDao) {
+    val staffPalette = listOf(Color(0xFF1A237E), Color(0xFF3F51B5))
+    var department by remember { mutableStateOf("") }
+    
     RegistrationFormBase(
         title = "Staff Account",
         subtitle = "Professional portal for camp leaders",
         palette = staffPalette,
         onRegisterSuccess = onRegisterSuccess,
-        onNavigateBack = onNavigateBack
+        onNavigateBack = onNavigateBack,
+        dao = dao,
+        role = "Staff",
+        roleSpecific1 = department
     ) {
-        // Staff specific fields if any, otherwise standard
         StandardRegistrationFields()
+        Spacer(modifier = Modifier.height(12.dp))
+        OutlinedTextField(
+            value = department,
+            onValueChange = { department = it },
+            label = { Text("Department") },
+            modifier = Modifier.fillMaxWidth(),
+            shape = RoundedCornerShape(12.dp)
+        )
     }
 }
 
 @Composable
-fun ParentRegistrationScreen(onRegisterSuccess: () -> Unit, onNavigateBack: () -> Unit) {
-    val parentPalette = listOf(Color(0xFF006064), Color(0xFF0097A7)) // Warm Teals
+fun ParentRegistrationScreen(onRegisterSuccess: () -> Unit, onNavigateBack: () -> Unit, dao: com.gocamping.data.AppDao) {
+    val parentPalette = listOf(Color(0xFF006064), Color(0xFF0097A7))
+    var studentId by remember { mutableStateOf("") }
+    
     RegistrationFormBase(
         title = "Parent Account",
         subtitle = "Stay connected with your child's journey",
         palette = parentPalette,
         onRegisterSuccess = onRegisterSuccess,
-        onNavigateBack = onNavigateBack
+        onNavigateBack = onNavigateBack,
+        dao = dao,
+        role = "Parent",
+        roleSpecific1 = studentId
     ) {
         StandardRegistrationFields()
+        Spacer(modifier = Modifier.height(12.dp))
+        OutlinedTextField(
+            value = studentId,
+            onValueChange = { studentId = it },
+            label = { Text("Child's Student ID") },
+            modifier = Modifier.fillMaxWidth(),
+            shape = RoundedCornerShape(12.dp)
+        )
     }
 }
 
 @Composable
-fun StudentRegistrationScreen(onRegisterSuccess: () -> Unit, onNavigateBack: () -> Unit) {
+fun StudentRegistrationScreen(onRegisterSuccess: () -> Unit, onNavigateBack: () -> Unit, dao: com.gocamping.data.AppDao) {
     val studentPalette = listOf(ElectricPurple, BrightCyan)
+    var className by remember { mutableStateOf("") }
+    var address by remember { mutableStateOf("") }
+    
     RegistrationFormBase(
         title = "Student Account",
         subtitle = "Prepare for your next big adventure",
         palette = studentPalette,
         onRegisterSuccess = onRegisterSuccess,
-        onNavigateBack = onNavigateBack
+        onNavigateBack = onNavigateBack,
+        dao = dao,
+        role = "Student",
+        roleSpecific1 = className,
+        roleSpecific2 = address
     ) {
         StandardRegistrationFields()
+        Spacer(modifier = Modifier.height(12.dp))
+        OutlinedTextField(
+            value = className,
+            onValueChange = { className = it },
+            label = { Text("Class") },
+            modifier = Modifier.fillMaxWidth(),
+            shape = RoundedCornerShape(12.dp)
+        )
+        Spacer(modifier = Modifier.height(12.dp))
+        OutlinedTextField(
+            value = address,
+            onValueChange = { address = it },
+            label = { Text("Address") },
+            modifier = Modifier.fillMaxWidth(),
+            shape = RoundedCornerShape(12.dp)
+        )
     }
 }
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun RegistrationFormBase(
     title: String,
@@ -133,99 +186,94 @@ fun RegistrationFormBase(
     palette: List<Color>,
     onRegisterSuccess: () -> Unit,
     onNavigateBack: () -> Unit,
+    dao: com.gocamping.data.AppDao,
+    role: String,
+    roleSpecific1: String? = null,
+    roleSpecific2: String? = null,
     content: @Composable ColumnScope.() -> Unit
 ) {
+    var id by remember { mutableStateOf("") }
+    var name by remember { mutableStateOf("") }
+    var contact by remember { mutableStateOf("") }
+    var password by remember { mutableStateOf("") }
+    
+    val scope = rememberCoroutineScope()
+
     Box(
         modifier = Modifier
             .fillMaxSize()
             .background(brush = Brush.verticalGradient(colors = palette))
     ) {
-        Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(24.dp)
-                .verticalScroll(rememberScrollState()),
-            horizontalAlignment = Alignment.CenterHorizontally
+        IconButton(
+            onClick = onNavigateBack,
+            modifier = Modifier.padding(16.dp).align(Alignment.TopStart)
         ) {
-            Spacer(modifier = Modifier.height(48.dp))
-            
-            Text(
-                title,
-                style = MaterialTheme.typography.headlineLarge.copy(fontWeight = FontWeight.Bold),
-                color = Color.White
-            )
-            Text(subtitle, style = MaterialTheme.typography.bodyMedium, color = Color.White.copy(alpha = 0.8f))
-            
-            Spacer(modifier = Modifier.height(48.dp))
+            Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back", tint = Color.White)
+        }
 
-            Card(
-                modifier = Modifier.fillMaxWidth(),
-                shape = RoundedCornerShape(24.dp),
-                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface)
+        Card(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(top = 80.dp, start = 24.dp, end = 24.dp, bottom = 24.dp)
+                .align(Alignment.Center),
+            shape = RoundedCornerShape(24.dp),
+            colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface.copy(alpha = 0.95f))
+        ) {
+            Column(
+                modifier = Modifier
+                    .padding(24.dp)
+                    .verticalScroll(rememberScrollState()),
+                horizontalAlignment = Alignment.CenterHorizontally
             ) {
-                Column(
-                    modifier = Modifier.padding(24.dp),
-                    horizontalAlignment = Alignment.CenterHorizontally
+                Text(title, style = MaterialTheme.typography.headlineMedium, fontWeight = FontWeight.ExtraBold, color = palette.first())
+                Text(subtitle, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                
+                Spacer(modifier = Modifier.height(24.dp))
+                
+                OutlinedTextField(value = id, onValueChange = { id = it }, label = { Text("User ID") }, modifier = Modifier.fillMaxWidth(), shape = RoundedCornerShape(12.dp))
+                Spacer(modifier = Modifier.height(12.dp))
+                OutlinedTextField(value = name, onValueChange = { name = it }, label = { Text("Full Name") }, modifier = Modifier.fillMaxWidth(), shape = RoundedCornerShape(12.dp))
+                Spacer(modifier = Modifier.height(12.dp))
+                OutlinedTextField(value = contact, onValueChange = { contact = it }, label = { Text("Contact Number") }, modifier = Modifier.fillMaxWidth(), shape = RoundedCornerShape(12.dp))
+                Spacer(modifier = Modifier.height(12.dp))
+                OutlinedTextField(value = password, onValueChange = { password = it }, label = { Text("Password") }, visualTransformation = PasswordVisualTransformation(), modifier = Modifier.fillMaxWidth(), shape = RoundedCornerShape(12.dp))
+                
+                content()
+                
+                Spacer(modifier = Modifier.height(32.dp))
+
+                Button(
+                    onClick = { 
+                        scope.launch(kotlinx.coroutines.Dispatchers.IO) {
+                            val user = com.gocamping.data.User(
+                                id = id,
+                                name = name,
+                                role = role,
+                                contactNo = contact,
+                                password = password,
+                                roleSpecific1 = roleSpecific1,
+                                roleSpecific2 = roleSpecific2
+                            )
+                            dao.insertUser(user)
+                            with(kotlinx.coroutines.Dispatchers.Main) {
+                                onRegisterSuccess()
+                            }
+                        }
+                    },
+                    modifier = Modifier.fillMaxWidth().height(56.dp),
+                    shape = RoundedCornerShape(12.dp),
+                    colors = ButtonDefaults.buttonColors(containerColor = palette.first())
                 ) {
-                    content()
-                    
-                    Spacer(modifier = Modifier.height(32.dp))
-                    
-                    Button(
-                        onClick = onRegisterSuccess,
-                        modifier = Modifier.fillMaxWidth().height(56.dp),
-                        shape = RoundedCornerShape(12.dp),
-                        colors = ButtonDefaults.buttonColors(containerColor = palette[0])
-                    ) {
-                        Text("Finish Registration", style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold))
-                    }
-                    
-                    TextButton(onClick = onNavigateBack) {
-                        Text("Cancel", color = MaterialTheme.colorScheme.onSurfaceVariant)
-                    }
+                    Text("Register Account", style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold))
                 }
             }
         }
     }
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun StandardRegistrationFields() {
-    var id by remember { mutableStateOf("") }
-    var name by remember { mutableStateOf("") }
-    var contact by remember { mutableStateOf("") }
-    var password by remember { mutableStateOf("") }
-
-    OutlinedTextField(
-        value = id,
-        onValueChange = { id = it },
-        label = { Text("ID Number") },
-        modifier = Modifier.fillMaxWidth(),
-        shape = RoundedCornerShape(12.dp)
-    )
-    Spacer(modifier = Modifier.height(12.dp))
-    OutlinedTextField(
-        value = name,
-        onValueChange = { name = it },
-        label = { Text("Full Name") },
-        modifier = Modifier.fillMaxWidth(),
-        shape = RoundedCornerShape(12.dp)
-    )
-    Spacer(modifier = Modifier.height(12.dp))
-    OutlinedTextField(
-        value = contact,
-        onValueChange = { contact = it },
-        label = { Text("Contact Number") },
-        modifier = Modifier.fillMaxWidth(),
-        shape = RoundedCornerShape(12.dp)
-    )
-    Spacer(modifier = Modifier.height(12.dp))
-    OutlinedTextField(
-        value = password,
-        onValueChange = { password = it },
-        label = { Text("Password") },
-        visualTransformation = PasswordVisualTransformation(),
-        modifier = Modifier.fillMaxWidth(),
-        shape = RoundedCornerShape(12.dp)
-    )
+    // This is now handled within RegistrationFormBase to facilitate state management and persistence.
+    // Keeping as a placeholder if needed for future extensions.
 }

@@ -1,0 +1,204 @@
+﻿To honour the JVM settings for this build a single-use Daemon process will be forked. For more on this, please refer to https://docs.gradle.org/8.9/userguide/gradle_daemon.html#sec:disabling_the_daemon in the Gradle documentation.
+Daemon will be stopped at the end of the build 
+> Task :app:preBuild UP-TO-DATE
+> Task :app:preDebugBuild UP-TO-DATE
+> Task :app:mergeDebugNativeDebugMetadata NO-SOURCE
+> Task :app:checkKotlinGradlePluginConfigurationErrors SKIPPED
+> Task :app:checkDebugAarMetadata UP-TO-DATE
+> Task :app:generateDebugResValues UP-TO-DATE
+> Task :app:mapDebugSourceSetPaths UP-TO-DATE
+> Task :app:generateDebugResources UP-TO-DATE
+> Task :app:mergeDebugResources UP-TO-DATE
+> Task :app:packageDebugResources UP-TO-DATE
+> Task :app:parseDebugLocalResources UP-TO-DATE
+> Task :app:createDebugCompatibleScreenManifests UP-TO-DATE
+> Task :app:extractDeepLinksDebug UP-TO-DATE
+> Task :app:processDebugMainManifest UP-TO-DATE
+> Task :app:processDebugManifest UP-TO-DATE
+> Task :app:processDebugManifestForPackage UP-TO-DATE
+> Task :app:processDebugResources UP-TO-DATE
+> Task :app:javaPreCompileDebug UP-TO-DATE
+> Task :app:mergeDebugShaders UP-TO-DATE
+> Task :app:compileDebugShaders NO-SOURCE
+> Task :app:generateDebugAssets UP-TO-DATE
+> Task :app:mergeDebugAssets UP-TO-DATE
+> Task :app:compressDebugAssets UP-TO-DATE
+> Task :app:checkDebugDuplicateClasses UP-TO-DATE
+> Task :app:desugarDebugFileDependencies UP-TO-DATE
+> Task :app:mergeExtDexDebug UP-TO-DATE
+> Task :app:mergeLibDexDebug UP-TO-DATE
+> Task :app:mergeDebugJniLibFolders UP-TO-DATE
+> Task :app:mergeDebugNativeLibs NO-SOURCE
+> Task :app:stripDebugDebugSymbols NO-SOURCE
+> Task :app:validateSigningDebug UP-TO-DATE
+> Task :app:writeDebugAppMetadata UP-TO-DATE
+> Task :app:writeDebugSigningConfigVersions UP-TO-DATE
+
+> Task :app:compileDebugKotlin
+./gradlew : e: file:/
+//C:/Users/chand/.gem
+ini/antigravity/scrat
+ch/go_camping_android
+/app/src/main/java/co
+m/gocamping/ui/screen
+s/DashboardScreens.kt
+:95:17 Unresolved 
+reference 'Color'.
+At line:1 char:1
++ ./gradlew 
+assembleDebug 
+--no-daemon > 
+build_error_5.txt 
+2>&1
++ ~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo   
+           : NotSpe  
+  cified: (e: file   
+ :///C:/U...erenc    
+e 'Color'.:Strin    
+g) [], RemoteExc    
+eption
+    + FullyQualified 
+   ErrorId : Native  
+  CommandError
+ 
+e: file:///C:/Users/c
+hand/.gemini/antigrav
+ity/scratch/go_campin
+g_android/app/src/mai
+n/java/com/gocamping/
+ui/screens/DashboardS
+creens.kt:156:41 
+Unresolved reference 
+'Color'.
+e: file:///C:/Users/c
+hand/.gemini/antigrav
+ity/scratch/go_campin
+g_android/app/src/mai
+n/java/com/gocamping/
+ui/screens/DashboardS
+creens.kt:157:46 
+Unresolved reference 
+'Color'.
+e: file:///C:/Users/c
+hand/.gemini/antigrav
+ity/scratch/go_campin
+g_android/app/src/mai
+n/java/com/gocamping/
+ui/screens/DashboardS
+creens.kt:166:18 
+Unresolved reference 
+'background'.
+e: file:///C:/Users/c
+hand/.gemini/antigrav
+ity/scratch/go_campin
+g_android/app/src/mai
+n/java/com/gocamping/
+ui/screens/DashboardS
+creens.kt:183:85 
+Unresolved reference 
+'Color'.
+e: file:///C:/Users/c
+hand/.gemini/antigrav
+ity/scratch/go_campin
+g_android/app/src/mai
+n/java/com/gocamping/
+ui/screens/DashboardS
+creens.kt:185:44 
+Unresolved reference 
+'clickable'.
+e: file:///C:/Users/c
+hand/.gemini/antigrav
+ity/scratch/go_campin
+g_android/app/src/mai
+n/java/com/gocamping/
+ui/screens/DashboardS
+creens.kt:197:35 
+Unresolved reference 
+'copy'.
+e: file:///C:/Users/c
+hand/.gemini/antigrav
+ity/scratch/go_campin
+g_android/app/src/mai
+n/java/com/gocamping/
+ui/screens/Registrati
+onScreens.kt:208:13 
+Overload resolution 
+ambiguity between 
+candidates:
+@Composable() @Compos
+ableTarget(...) fun 
+Icon(bitmap: 
+ImageBitmap, 
+contentDescription: 
+String?, modifier: 
+Modifier = ..., 
+tint: Color = ...): 
+Unit
+@Composable() @Compos
+ableTarget(...) fun 
+Icon(painter: 
+Painter, 
+contentDescription: 
+String?, modifier: 
+Modifier = ..., 
+tint: Color = ...): 
+Unit
+@Composable() @Compos
+ableTarget(...) fun 
+Icon(imageVector: 
+ImageVector, 
+contentDescription: 
+String?, modifier: 
+Modifier = ..., 
+tint: Color = ...): 
+Unit
+e: file:///C:/Users/c
+hand/.gemini/antigrav
+ity/scratch/go_campin
+g_android/app/src/mai
+n/java/com/gocamping/
+ui/screens/Registrati
+onScreens.kt:208:18 
+Unresolved reference 
+'Icons'.
+
+> Task :app:compileDebugKotlin FAILED
+
+FAILURE: Build 
+failed with an 
+exception.
+
+* What went wrong:
+Execution failed for 
+task ':app:compileDeb
+ugKotlin'.
+> A failure occurred 
+while executing org.j
+etbrains.kotlin.compi
+lerRunner.GradleCompi
+lerRunnerWithWorkers$
+GradleKotlinCompilerW
+orkAction
+   > Compilation 
+error. See log for 
+more details
+
+* Try:
+> Run with 
+--stacktrace option 
+to get the stack 
+trace.
+> Run with --info or 
+--debug option to 
+get more log output.
+> Run with --scan to 
+get full insights.
+> Get more help at ht
+tps://help.gradle.org
+.
+
+BUILD FAILED in 29s
+26 actionable tasks: 1 executed, 25 up-to-date

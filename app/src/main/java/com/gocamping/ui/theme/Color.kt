@@ -19,6 +19,8 @@ val BackgroundDark = Color(0xFF1C1B1F)
 val SurfaceLight = Color(0xFFFFFFFF)
 val SurfaceDark = Color(0xFF252429)
 
-// Camping Vibes (Optional overlays)
-val ForestGreenDeep = Color(0xFF1B5E20)
-val CampfireGlow = Color(0xFFFFAB40)
+// Camping Design Colors
+val CampingGreen = Color(0xFF2E7D32)
+val CampingIvory = Color(0xFFFDFCF0)
+val CampingGreenHeader = Color(0xFF1B5E20)
+val CampingTextDark = Color(0xFF1B4332)
