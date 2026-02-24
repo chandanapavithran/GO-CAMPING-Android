@@ -15,13 +15,10 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.unit.dp
 import com.gocamping.ui.theme.*
-import com.gocamping.ui.Screen
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.Dispatchers
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
-import androidx.compose.material.icons.filled.*
-import androidx.compose.ui.graphics.vector.ImageVector
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -104,15 +101,7 @@ fun StaffRegistrationScreen(onRegisterSuccess: (String, String) -> Unit, onNavig
         role = "Staff",
         roleSpecific1 = department
     ) {
-        StandardRegistrationFields()
-        Spacer(modifier = Modifier.height(12.dp))
-        OutlinedTextField(
-            value = department,
-            onValueChange = { department = it },
-            label = { Text("Department") },
-            modifier = Modifier.fillMaxWidth(),
-            shape = RoundedCornerShape(12.dp)
-        )
+        StandardRegistrationFields(role = "Staff", roleSpecific1 = department, onRoleSpecific1Change = { department = it })
     }
 }
 
@@ -131,15 +120,7 @@ fun ParentRegistrationScreen(onRegisterSuccess: (String, String) -> Unit, onNavi
         role = "Parent",
         roleSpecific1 = studentId
     ) {
-        StandardRegistrationFields()
-        Spacer(modifier = Modifier.height(12.dp))
-        OutlinedTextField(
-            value = studentId,
-            onValueChange = { studentId = it },
-            label = { Text("Child's Student ID") },
-            modifier = Modifier.fillMaxWidth(),
-            shape = RoundedCornerShape(12.dp)
-        )
+        StandardRegistrationFields(role = "Parent", roleSpecific1 = studentId, onRoleSpecific1Change = { studentId = it })
     }
 }
 
@@ -160,22 +141,12 @@ fun StudentRegistrationScreen(onRegisterSuccess: (String, String) -> Unit, onNav
         roleSpecific1 = className,
         roleSpecific2 = address
     ) {
-        StandardRegistrationFields()
-        Spacer(modifier = Modifier.height(12.dp))
-        OutlinedTextField(
-            value = className,
-            onValueChange = { className = it },
-            label = { Text("Class") },
-            modifier = Modifier.fillMaxWidth(),
-            shape = RoundedCornerShape(12.dp)
-        )
-        Spacer(modifier = Modifier.height(12.dp))
-        OutlinedTextField(
-            value = address,
-            onValueChange = { address = it },
-            label = { Text("Address") },
-            modifier = Modifier.fillMaxWidth(),
-            shape = RoundedCornerShape(12.dp)
+        StandardRegistrationFields(
+            role = "Student", 
+            roleSpecific1 = className, 
+            onRoleSpecific1Change = { className = it },
+            roleSpecific2 = address,
+            onRoleSpecific2Change = { address = it }
         )
     }
 }
@@ -245,7 +216,7 @@ fun RegistrationFormBase(
 
                 Button(
                     onClick = { 
-                        scope.launch(kotlinx.coroutines.Dispatchers.IO) {
+                        scope.launch(Dispatchers.IO) {
                             val user = com.gocamping.data.User(
                                 id = id,
                                 name = name,
@@ -256,7 +227,7 @@ fun RegistrationFormBase(
                                 roleSpecific2 = roleSpecific2
                             )
                             dao.insertUser(user)
-                            with(kotlinx.coroutines.Dispatchers.Main) {
+                            kotlinx.coroutines.withContext(Dispatchers.Main) {
                                 onRegisterSuccess(role, id)
                             }
                         }
@@ -274,7 +245,41 @@ fun RegistrationFormBase(
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun StandardRegistrationFields() {
-    // This is now handled within RegistrationFormBase to facilitate state management and persistence.
-    // Keeping as a placeholder if needed for future extensions.
+fun StandardRegistrationFields(
+    role: String,
+    roleSpecific1: String?,
+    onRoleSpecific1Change: (String) -> Unit,
+    roleSpecific2: String? = null,
+    onRoleSpecific2Change: ((String) -> Unit)? = null
+) {
+    val label1 = when(role) {
+        "Student" -> "Class"
+        "Staff" -> "Department"
+        "Parent" -> "Child\'s Student ID"
+        else -> ""
+    }
+    
+    val label2 = if (role == "Student") "Address" else ""
+
+    Spacer(modifier = Modifier.height(12.dp))
+    if(roleSpecific1 != null) {
+        OutlinedTextField(
+            value = roleSpecific1,
+            onValueChange = onRoleSpecific1Change,
+            label = { Text(label1) },
+            modifier = Modifier.fillMaxWidth(),
+            shape = RoundedCornerShape(12.dp)
+        )
+    }
+
+    if (roleSpecific2 != null && onRoleSpecific2Change != null) {
+        Spacer(modifier = Modifier.height(12.dp))
+        OutlinedTextField(
+            value = roleSpecific2,
+            onValueChange = onRoleSpecific2Change,
+            label = { Text(label2) },
+            modifier = Modifier.fillMaxWidth(),
+            shape = RoundedCornerShape(12.dp)
+        )
+    }
 }

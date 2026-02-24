@@ -28,7 +28,6 @@ private val DarkColorScheme = darkColorScheme(
 private val LightColorScheme = lightColorScheme(
     primary = CampingGreen,
     secondary = CampingGreenHeader,
-    tertiary = ForestGreenDeep,
     background = CampingIvory,
     surface = SurfaceLight,
     onPrimary = Color.White,

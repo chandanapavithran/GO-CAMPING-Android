@@ -15,7 +15,7 @@ fun AppNavigation(navController: NavHostController = rememberNavController()) {
     val context = androidx.compose.ui.platform.LocalContext.current
     val database = remember { AppDatabase.getDatabase(context) }
     val dao = database.appDao()
-    
+
     var currentUserRole by remember { mutableStateOf("Guest") }
     var currentUserId by remember { mutableStateOf("") }
 
@@ -97,11 +97,11 @@ fun AppNavigation(navController: NavHostController = rememberNavController()) {
                 dao = dao
             )
         }
-        
+
         // Functional Dashboards
-        composable(Screen.StudentDashboard.route) { 
+        composable(Screen.StudentDashboard.route) {
             StudentDashboardScreen(
-                onLogout = { 
+                onLogout = {
                     navController.navigate(Screen.Login.route) {
                         popUpTo(Screen.StudentDashboard.route) { inclusive = true }
                     }
@@ -109,11 +109,11 @@ fun AppNavigation(navController: NavHostController = rememberNavController()) {
                 onNavigateToModule = { module ->
                     navController.navigate(module)
                 }
-            ) 
+            )
         }
-        composable(Screen.StaffDashboard.route) { 
+        composable(Screen.StaffDashboard.route) {
             StaffDashboardScreen(
-                onLogout = { 
+                onLogout = {
                     navController.navigate(Screen.Login.route) {
                         popUpTo(Screen.StaffDashboard.route) { inclusive = true }
                     }
@@ -121,11 +121,11 @@ fun AppNavigation(navController: NavHostController = rememberNavController()) {
                 onNavigateToModule = { module ->
                     navController.navigate(module)
                 }
-            ) 
+            )
         }
-        composable(Screen.ParentDashboard.route) { 
+        composable(Screen.ParentDashboard.route) {
             ParentDashboardScreen(
-                onLogout = { 
+                onLogout = {
                     navController.navigate(Screen.Login.route) {
                         popUpTo(Screen.ParentDashboard.route) { inclusive = true }
                     }
@@ -133,7 +133,7 @@ fun AppNavigation(navController: NavHostController = rememberNavController()) {
                 onNavigateToModule = { module ->
                     navController.navigate(module)
                 }
-            ) 
+            )
         }
 
         // Module Screens
