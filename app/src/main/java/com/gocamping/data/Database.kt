@@ -62,6 +62,12 @@ interface AppDao {
     @Query("SELECT * FROM users WHERE id = :id AND password = :password AND isArchived = 0")
     suspend fun login(id: String, password: String): User?
 
+    @Query("SELECT * FROM users WHERE id = :id")
+    suspend fun getUserById(id: String): User?
+
+    @Query("SELECT * FROM users WHERE id = :id AND role = 'Student'")
+    suspend fun getStudentById(id: String): User?
+
     // Attendance
     @Insert
     suspend fun insertAttendance(attendance: Attendance)

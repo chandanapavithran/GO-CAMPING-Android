@@ -19,6 +19,15 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.Dispatchers
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.foundation.Image
+import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.res.painterResource
+import com.gocamping.R
+import androidx.compose.ui.unit.sp
+import com.gocamping.ui.theme.CampingGreenHeader
+import com.gocamping.ui.theme.CampingTextDark
+import androidx.compose.material.icons.filled.ArrowBack
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -95,11 +104,18 @@ fun StaffRegistrationScreen(onRegisterSuccess: (String, String) -> Unit, onNavig
         title = "Staff Account",
         subtitle = "Professional portal for camp leaders",
         palette = staffPalette,
-        onRegisterSuccess = onRegisterSuccess,
+        onRegisterSuccess = { onRegisterSuccess("Staff", "") }, // Adjusting to new signature
         onNavigateBack = onNavigateBack,
         dao = dao,
         role = "Staff",
-        roleSpecific1 = department
+        roleSpecific1 = department,
+        validateSpecific = {
+            if (department.isBlank()) {
+                "Department cannot be empty"
+            } else {
+                null
+            }
+        }
     ) {
         StandardRegistrationFields(role = "Staff", roleSpecific1 = department, onRoleSpecific1Change = { department = it })
     }
@@ -114,11 +130,23 @@ fun ParentRegistrationScreen(onRegisterSuccess: (String, String) -> Unit, onNavi
         title = "Parent Account",
         subtitle = "Stay connected with your child's journey",
         palette = parentPalette,
-        onRegisterSuccess = onRegisterSuccess,
+        onRegisterSuccess = { onRegisterSuccess("Parent", "") }, // Adjusting to new signature
         onNavigateBack = onNavigateBack,
         dao = dao,
         role = "Parent",
-        roleSpecific1 = studentId
+        roleSpecific1 = studentId,
+        validateSpecific = {
+            if (studentId.isBlank()) {
+                "Child's Student ID cannot be empty"
+            } else {
+                val student = dao.getStudentById(studentId)
+                if (student == null) {
+                    "Child with ID $studentId does not exist"
+                } else {
+                    null
+                }
+            }
+        }
     ) {
         StandardRegistrationFields(role = "Parent", roleSpecific1 = studentId, onRoleSpecific1Change = { studentId = it })
     }
@@ -134,12 +162,21 @@ fun StudentRegistrationScreen(onRegisterSuccess: (String, String) -> Unit, onNav
         title = "Student Account",
         subtitle = "Prepare for your next big adventure",
         palette = studentPalette,
-        onRegisterSuccess = onRegisterSuccess,
+        onRegisterSuccess = { onRegisterSuccess("Student", "") }, // Adjusting to new signature
         onNavigateBack = onNavigateBack,
         dao = dao,
         role = "Student",
         roleSpecific1 = className,
-        roleSpecific2 = address
+        roleSpecific2 = address,
+        validateSpecific = {
+            if (className.isBlank()) {
+                "Class cannot be empty"
+            } else if (address.isBlank()) {
+                "Address cannot be empty"
+            } else {
+                null
+            }
+        }
     ) {
         StandardRegistrationFields(
             role = "Student", 
@@ -151,64 +188,152 @@ fun StudentRegistrationScreen(onRegisterSuccess: (String, String) -> Unit, onNav
     }
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun RegistrationFormBase(
     title: String,
     subtitle: String,
     palette: List<Color>,
-    onRegisterSuccess: (String, String) -> Unit,
+    onRegisterSuccess: () -> Unit,
     onNavigateBack: () -> Unit,
     dao: com.gocamping.data.AppDao,
     role: String,
     roleSpecific1: String? = null,
     roleSpecific2: String? = null,
+    validateSpecific: (suspend () -> String?)? = null,
     content: @Composable ColumnScope.() -> Unit
 ) {
     var id by remember { mutableStateOf("") }
     var name by remember { mutableStateOf("") }
     var contact by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
+    var errorMessage by remember { mutableStateOf<String?>(null) }
     
     val scope = rememberCoroutineScope()
 
     Box(
-        modifier = Modifier
-            .fillMaxSize()
-            .background(brush = Brush.verticalGradient(colors = palette))
+        modifier = Modifier.fillMaxSize()
     ) {
-        IconButton(
-            onClick = onNavigateBack,
-            modifier = Modifier.padding(16.dp).align(Alignment.TopStart)
-        ) {
-            Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back", tint = Color.White)
-        }
-
-        Card(
+        // Bottom Wave (Moved to background)
+        Image(
+            painter = painterResource(id = R.drawable.bg_wave),
+            contentDescription = null,
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(top = 80.dp, start = 24.dp, end = 24.dp, bottom = 24.dp)
-                .align(Alignment.Center),
-            shape = RoundedCornerShape(24.dp),
-            colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface.copy(alpha = 0.95f))
-        ) {
+                .align(Alignment.BottomCenter),
+            contentScale = ContentScale.FillWidth
+        )
+
+        Column(modifier = Modifier.fillMaxSize()) {
+            // Header
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .background(CampingGreenHeader)
+                    .padding(16.dp),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                IconButton(onClick = onNavigateBack) {
+                    Icon(Icons.Default.ArrowBack, contentDescription = "Back", tint = Color.White)
+                }
+                
+                Spacer(modifier = Modifier.weight(1f))
+                
+                Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                    Image(
+                        painter = painterResource(id = R.drawable.ic_logo),
+                        contentDescription = null,
+                        modifier = Modifier.size(40.dp)
+                    )
+                    Text(
+                        "GO CAMPING",
+                        color = Color.White,
+                        style = MaterialTheme.typography.titleMedium.copy(
+                            fontWeight = FontWeight.Bold,
+                            letterSpacing = 1.sp
+                        )
+                    )
+                }
+                
+                Spacer(modifier = Modifier.weight(1f))
+                Box(modifier = Modifier.size(48.dp))
+            }
+
             Column(
                 modifier = Modifier
-                    .padding(24.dp)
+                    .fillMaxWidth()
+                    .padding(horizontal = 24.dp, vertical = 24.dp)
                     .verticalScroll(rememberScrollState()),
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
-                Text(title, style = MaterialTheme.typography.headlineMedium, fontWeight = FontWeight.ExtraBold, color = palette.first())
-                Text(subtitle, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                Text(
+                    title,
+                    style = MaterialTheme.typography.headlineSmall.copy(
+                        fontWeight = FontWeight.Bold,
+                        color = CampingTextDark
+                    )
+                )
+                Text(subtitle, style = MaterialTheme.typography.bodySmall, color = CampingTextDark.copy(alpha = 0.7f))
                 
                 Spacer(modifier = Modifier.height(24.dp))
                 
-                OutlinedTextField(value = id, onValueChange = { id = it }, label = { Text("User ID") }, modifier = Modifier.fillMaxWidth(), shape = RoundedCornerShape(12.dp))
+                if (errorMessage != null) {
+                    Text(
+                        text = errorMessage!!,
+                        color = MaterialTheme.colorScheme.error,
+                        style = MaterialTheme.typography.bodySmall,
+                        modifier = Modifier.padding(bottom = 16.dp)
+                    )
+                }
+
+                OutlinedTextField(
+                    value = id,
+                    onValueChange = { id = it; errorMessage = null },
+                    label = { Text("User ID") },
+                    modifier = Modifier.fillMaxWidth(),
+                    shape = RoundedCornerShape(8.dp),
+                    colors = OutlinedTextFieldDefaults.colors(
+                        focusedBorderColor = Color.LightGray,
+                        unfocusedBorderColor = Color.LightGray
+                    )
+                )
                 Spacer(modifier = Modifier.height(12.dp))
-                OutlinedTextField(value = name, onValueChange = { name = it }, label = { Text("Full Name") }, modifier = Modifier.fillMaxWidth(), shape = RoundedCornerShape(12.dp))
+                OutlinedTextField(
+                    value = name,
+                    onValueChange = { name = it; errorMessage = null },
+                    label = { Text("Full Name") },
+                    modifier = Modifier.fillMaxWidth(),
+                    shape = RoundedCornerShape(8.dp),
+                    colors = OutlinedTextFieldDefaults.colors(
+                        focusedBorderColor = Color.LightGray,
+                        unfocusedBorderColor = Color.LightGray
+                    )
+                )
                 Spacer(modifier = Modifier.height(12.dp))
-                OutlinedTextField(value = contact, onValueChange = { contact = it }, label = { Text("Contact Number") }, modifier = Modifier.fillMaxWidth(), shape = RoundedCornerShape(12.dp))
+                OutlinedTextField(
+                    value = contact,
+                    onValueChange = { contact = it; errorMessage = null },
+                    label = { Text("Contact Number") },
+                    modifier = Modifier.fillMaxWidth(),
+                    shape = RoundedCornerShape(8.dp),
+                    colors = OutlinedTextFieldDefaults.colors(
+                        focusedBorderColor = Color.LightGray,
+                        unfocusedBorderColor = Color.LightGray
+                    )
+                )
                 Spacer(modifier = Modifier.height(12.dp))
-                OutlinedTextField(value = password, onValueChange = { password = it }, label = { Text("Password") }, visualTransformation = PasswordVisualTransformation(), modifier = Modifier.fillMaxWidth(), shape = RoundedCornerShape(12.dp))
+                OutlinedTextField(
+                    value = password,
+                    onValueChange = { password = it; errorMessage = null },
+                    label = { Text("Password") },
+                    visualTransformation = PasswordVisualTransformation(),
+                    modifier = Modifier.fillMaxWidth(),
+                    shape = RoundedCornerShape(8.dp),
+                    colors = OutlinedTextFieldDefaults.colors(
+                        focusedBorderColor = Color.LightGray,
+                        unfocusedBorderColor = Color.LightGray
+                    )
+                )
                 
                 content()
                 
@@ -216,7 +341,30 @@ fun RegistrationFormBase(
 
                 Button(
                     onClick = { 
-                        scope.launch(Dispatchers.IO) {
+                        if (id.isBlank() || name.isBlank() || contact.isBlank() || password.isBlank()) {
+                            errorMessage = "All fields are required"
+                            return@Button
+                        }
+                        
+                        scope.launch(kotlinx.coroutines.Dispatchers.IO) {
+                            // Check if user exists
+                            val existingUser = dao.getUserById(id)
+                            if (existingUser != null) {
+                                with(kotlinx.coroutines.Dispatchers.Main) {
+                                    errorMessage = "Account with this ID already exists"
+                                }
+                                return@launch
+                            }
+
+                            // Role specific validation
+                            val specificError = validateSpecific?.invoke()
+                            if (specificError != null) {
+                                with(kotlinx.coroutines.Dispatchers.Main) {
+                                    errorMessage = specificError
+                                }
+                                return@launch
+                            }
+
                             val user = com.gocamping.data.User(
                                 id = id,
                                 name = name,
@@ -227,17 +375,23 @@ fun RegistrationFormBase(
                                 roleSpecific2 = roleSpecific2
                             )
                             dao.insertUser(user)
-                            kotlinx.coroutines.withContext(Dispatchers.Main) {
-                                onRegisterSuccess(role, id)
+                            with(kotlinx.coroutines.Dispatchers.Main) {
+                                onRegisterSuccess()
                             }
                         }
                     },
                     modifier = Modifier.fillMaxWidth().height(56.dp),
-                    shape = RoundedCornerShape(12.dp),
-                    colors = ButtonDefaults.buttonColors(containerColor = palette.first())
+                    shape = RoundedCornerShape(8.dp),
+                    colors = ButtonDefaults.buttonColors(containerColor = CampingGreenHeader)
                 ) {
                     Text("Register Account", style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold))
                 }
+                
+                Spacer(modifier = Modifier.height(16.dp))
+                TextButton(onClick = onNavigateBack) {
+                    Text("Already have an account? Login", color = CampingTextDark.copy(alpha = 0.7f))
+                }
+                Spacer(modifier = Modifier.height(100.dp)) // Padding for wave
             }
         }
     }
@@ -268,7 +422,11 @@ fun StandardRegistrationFields(
             onValueChange = onRoleSpecific1Change,
             label = { Text(label1) },
             modifier = Modifier.fillMaxWidth(),
-            shape = RoundedCornerShape(12.dp)
+            shape = RoundedCornerShape(8.dp),
+            colors = OutlinedTextFieldDefaults.colors(
+                focusedBorderColor = Color.LightGray,
+                unfocusedBorderColor = Color.LightGray
+            )
         )
     }
 
@@ -279,7 +437,11 @@ fun StandardRegistrationFields(
             onValueChange = onRoleSpecific2Change,
             label = { Text(label2) },
             modifier = Modifier.fillMaxWidth(),
-            shape = RoundedCornerShape(12.dp)
+            shape = RoundedCornerShape(8.dp),
+            colors = OutlinedTextFieldDefaults.colors(
+                focusedBorderColor = Color.LightGray,
+                unfocusedBorderColor = Color.LightGray
+            )
         )
     }
 }

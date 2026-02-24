@@ -34,10 +34,14 @@ fun AppNavigation(navController: NavHostController = rememberNavController()) {
                 onNavigateToDashboard = { role, id ->
                     currentUserRole = role
                     currentUserId = id
-                    when (role) {
-                        "Student" -> navController.navigate(Screen.StudentDashboard.route)
-                        "Staff" -> navController.navigate(Screen.StaffDashboard.route)
-                        "Parent" -> navController.navigate(Screen.ParentDashboard.route)
+                    val targetRoute = when (role) {
+                        "Student" -> Screen.StudentDashboard.route
+                        "Staff" -> Screen.StaffDashboard.route
+                        "Parent" -> Screen.ParentDashboard.route
+                        else -> Screen.Login.route
+                    }
+                    navController.navigate(targetRoute) {
+                        popUpTo(Screen.Login.route) { inclusive = true }
                     }
                 },
                 onNavigateToRegister = {
@@ -60,10 +64,8 @@ fun AppNavigation(navController: NavHostController = rememberNavController()) {
         }
         composable(Screen.RegisterStudent.route) {
             StudentRegistrationScreen(
-                onRegisterSuccess = { role, id ->
-                    currentUserRole = role
-                    currentUserId = id
-                    navController.navigate(Screen.StudentDashboard.route) {
+                onRegisterSuccess = { _, _ ->
+                    navController.navigate(Screen.Login.route) {
                         popUpTo(Screen.Login.route) { inclusive = true }
                     }
                 },
@@ -73,10 +75,8 @@ fun AppNavigation(navController: NavHostController = rememberNavController()) {
         }
         composable(Screen.RegisterStaff.route) {
             StaffRegistrationScreen(
-                onRegisterSuccess = { role, id ->
-                    currentUserRole = role
-                    currentUserId = id
-                    navController.navigate(Screen.StaffDashboard.route) {
+                onRegisterSuccess = { _, _ ->
+                    navController.navigate(Screen.Login.route) {
                         popUpTo(Screen.Login.route) { inclusive = true }
                     }
                 },
@@ -86,10 +86,8 @@ fun AppNavigation(navController: NavHostController = rememberNavController()) {
         }
         composable(Screen.RegisterParent.route) {
             ParentRegistrationScreen(
-                onRegisterSuccess = { role, id ->
-                    currentUserRole = role
-                    currentUserId = id
-                    navController.navigate(Screen.ParentDashboard.route) {
+                onRegisterSuccess = { _, _ ->
+                    navController.navigate(Screen.Login.route) {
                         popUpTo(Screen.Login.route) { inclusive = true }
                     }
                 },
