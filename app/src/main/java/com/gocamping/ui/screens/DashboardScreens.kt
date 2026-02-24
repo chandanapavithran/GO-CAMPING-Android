@@ -16,6 +16,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.foundation.*
 import androidx.compose.ui.graphics.Color
+import androidx.compose.foundation.clickable
 import com.gocamping.ui.theme.*
 import com.gocamping.ui.Screen
 
@@ -184,7 +185,7 @@ fun HeaderSection(title: String, subtitle: String) {
 @Composable
 fun DashboardCard(title: String, icon: ImageVector, description: String, iconColor: Color, onClick: () -> Unit) {
     Card(
-        modifier = Modifier.fillMaxWidth().clickable(onClick = onClick),
+        modifier = Modifier.fillMaxWidth().clickable { onClick() },
         shape = RoundedCornerShape(16.dp),
         elevation = CardDefaults.cardElevation(defaultElevation = 4.dp),
         colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface)

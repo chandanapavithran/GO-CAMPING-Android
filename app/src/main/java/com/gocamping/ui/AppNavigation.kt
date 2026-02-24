@@ -7,6 +7,7 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import com.gocamping.ui.screens.*
+import com.gocamping.data.AppDatabase
 import com.gocamping.data.*
 
 @Composable
