@@ -376,8 +376,25 @@ fun StaffAlertContent(dao: com.gocamping.data.AppDao) {
     var selectedDate by remember { mutableStateOf(java.time.LocalDate.now().toString()) }
     var targetGroup by remember { mutableStateOf("All") }
     var showDatePicker by remember { mutableStateOf(false) }
+    var showSuccessDialog by remember { mutableStateOf(false) }
     var message by remember { mutableStateOf<String?>(null) }
     val scope = rememberCoroutineScope()
+
+    if (showSuccessDialog) {
+        AlertDialog(
+            onDismissRequest = { showSuccessDialog = false },
+            title = { Text("Success") },
+            text = { Text("you hv broadcasted the alert") },
+            confirmButton = {
+                Button(
+                    onClick = { showSuccessDialog = false },
+                    colors = ButtonDefaults.buttonColors(containerColor = CampingGreenHeader)
+                ) {
+                    Text("OK")
+                }
+            }
+        )
+    }
     
     if (showDatePicker) {
         val datePickerState = rememberDatePickerState()
@@ -468,8 +485,9 @@ fun StaffAlertContent(dao: com.gocamping.data.AppDao) {
                     )
                     dao.insertAlert(alert)
                     withContext(kotlinx.coroutines.Dispatchers.Main) {
-                        message = "Alert broadcasted successfully"
+                        showSuccessDialog = true
                         alertText = ""
+                        message = null
                     }
                 } catch (e: Exception) {
                     withContext(kotlinx.coroutines.Dispatchers.Main) {
