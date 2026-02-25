@@ -182,13 +182,20 @@ fun LoginScreen(
                 Button(
                     onClick = { 
                         scope.launch(kotlinx.coroutines.Dispatchers.IO) {
-                            val user = dao.login(username, password)
-                            if (user != null && user.role == selectedRole) {
-                                with(kotlinx.coroutines.Dispatchers.Main) {
-                                    onNavigateToDashboard(user.role, user.id)
+                            try {
+                                val user = dao.login(username, password)
+                                if (user != null && user.role == selectedRole) {
+                                    with(kotlinx.coroutines.Dispatchers.Main) {
+                                        onNavigateToDashboard(user.role, user.id)
+                                    }
+                                } else {
+                                    with(kotlinx.coroutines.Dispatchers.Main) {
+                                        showError = true
+                                    }
                                 }
-                            } else {
+                            } catch (e: Exception) {
                                 with(kotlinx.coroutines.Dispatchers.Main) {
+                                    // Optionally show a different error or log it
                                     showError = true
                                 }
                             }

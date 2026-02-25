@@ -208,8 +208,27 @@ fun RegistrationFormBase(
     var contact by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
     var errorMessage by remember { mutableStateOf<String?>(null) }
+    var showSuccessDialog by remember { mutableStateOf(false) }
     
     val scope = rememberCoroutineScope()
+
+    if (showSuccessDialog) {
+        AlertDialog(
+            onDismissRequest = { /* Don't dismiss by clicking outside */ },
+            title = { Text("Registration Successful") },
+            text = { Text("you hv created the account") },
+            confirmButton = {
+                Button(
+                    onClick = {
+                        showSuccessDialog = false
+                        onRegisterSuccess()
+                    }
+                ) {
+                    Text("OK")
+                }
+            }
+        )
+    }
 
     Box(
         modifier = Modifier.fillMaxSize()
@@ -347,36 +366,42 @@ fun RegistrationFormBase(
                         }
                         
                         scope.launch(kotlinx.coroutines.Dispatchers.IO) {
-                            // Check if user exists
-                            val existingUser = dao.getUserById(id)
-                            if (existingUser != null) {
-                                with(kotlinx.coroutines.Dispatchers.Main) {
-                                    errorMessage = "Account with this ID already exists"
+                            try {
+                                // Check if user exists
+                                val existingUser = dao.getUserById(id)
+                                if (existingUser != null) {
+                                    with(kotlinx.coroutines.Dispatchers.Main) {
+                                        errorMessage = "Account with this ID already exists"
+                                    }
+                                    return@launch
                                 }
-                                return@launch
-                            }
 
-                            // Role specific validation
-                            val specificError = validateSpecific?.invoke()
-                            if (specificError != null) {
-                                with(kotlinx.coroutines.Dispatchers.Main) {
-                                    errorMessage = specificError
+                                // Role specific validation
+                                val specificError = validateSpecific?.invoke()
+                                if (specificError != null) {
+                                    with(kotlinx.coroutines.Dispatchers.Main) {
+                                        errorMessage = specificError
+                                    }
+                                    return@launch
                                 }
-                                return@launch
-                            }
 
-                            val user = com.gocamping.data.User(
-                                id = id,
-                                name = name,
-                                role = role,
-                                contactNo = contact,
-                                password = password,
-                                roleSpecific1 = roleSpecific1,
-                                roleSpecific2 = roleSpecific2
-                            )
-                            dao.insertUser(user)
-                            with(kotlinx.coroutines.Dispatchers.Main) {
-                                onRegisterSuccess()
+                                val user = com.gocamping.data.User(
+                                    id = id,
+                                    name = name,
+                                    role = role,
+                                    contactNo = contact,
+                                    password = password,
+                                    roleSpecific1 = roleSpecific1,
+                                    roleSpecific2 = roleSpecific2
+                                )
+                                dao.insertUser(user)
+                                with(kotlinx.coroutines.Dispatchers.Main) {
+                                    showSuccessDialog = true
+                                }
+                            } catch (e: Exception) {
+                                with(kotlinx.coroutines.Dispatchers.Main) {
+                                    errorMessage = "Error: ${e.message}"
+                                }
                             }
                         }
                     },
