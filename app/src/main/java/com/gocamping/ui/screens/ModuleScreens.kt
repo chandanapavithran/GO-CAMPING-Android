@@ -190,11 +190,11 @@ fun StaffAttendanceContent(dao: com.gocamping.data.AppDao) {
                         status = selectedStatus
                     )
                     dao.insertAttendance(record)
-                    with(kotlinx.coroutines.Dispatchers.Main) {
+                    withContext(kotlinx.coroutines.Dispatchers.Main) {
                         message = "Attendance marked successfully"
                     }
                 } catch (e: Exception) {
-                    with(kotlinx.coroutines.Dispatchers.Main) {
+                    withContext(kotlinx.coroutines.Dispatchers.Main) {
                         message = "Error: ${e.message}"
                     }
                 }
@@ -221,7 +221,7 @@ fun ViewAttendanceContent(dao: com.gocamping.data.AppDao, studentId: String, rol
     LaunchedEffect(studentId) {
         scope.launch(kotlinx.coroutines.Dispatchers.IO) {
             val list = dao.getAttendanceForStudent(studentId)
-            with(kotlinx.coroutines.Dispatchers.Main) {
+            withContext(kotlinx.coroutines.Dispatchers.Main) {
                 records.clear()
                 records.addAll(list)
             }
@@ -395,7 +395,7 @@ fun ParentPaymentContent(dao: com.gocamping.data.AppDao, userId: String, initial
     LaunchedEffect(Unit) {
         scope.launch(kotlinx.coroutines.Dispatchers.IO) {
             val list = dao.getPaymentsForParent(userId)
-            with(kotlinx.coroutines.Dispatchers.Main) {
+            withContext(kotlinx.coroutines.Dispatchers.Main) {
                 payments.clear()
                 payments.addAll(list)
             }
@@ -562,7 +562,7 @@ fun SubmitFeedbackContent(dao: com.gocamping.data.AppDao, userId: String) {
                     date = java.time.LocalDate.now().toString()
                 )
                 dao.insertFeedback(f)
-                with(kotlinx.coroutines.Dispatchers.Main) {
+                withContext(kotlinx.coroutines.Dispatchers.Main) {
                     showSuccessDialog = true
                 }
             }
