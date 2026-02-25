@@ -32,10 +32,13 @@ fun AppNavigation(navController: NavHostController = rememberNavController()) {
         }
         composable(Screen.Login.route) {
             LoginScreen(
-                onNavigateToDashboard = { role: String, id: String, studentId: String? ->
+                onNavigateToDashboard = { role: String, id: String, sid: String ->
                     currentUserRole = role
                     currentUserId = id
-                    targetStudentId = if (role.equals("Student", ignoreCase = true)) id else studentId
+                    // For student role, the sid passed might be empty, so we use their own id.
+                    // For parent role, sid is the child's id.
+                    targetStudentId = if (role.equals("Student", ignoreCase = true)) id else if (sid.isNotEmpty()) sid else null
+                    
                     val targetRoute = when {
                         role.equals("Student", ignoreCase = true) -> Screen.StudentDashboard.route
                         role.equals("Staff", ignoreCase = true) -> Screen.StaffDashboard.route

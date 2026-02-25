@@ -27,7 +27,7 @@ import kotlinx.coroutines.launch
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun LoginScreen(
-    onNavigateToDashboard: (String, String, String?) -> Unit, 
+    onNavigateToDashboard: (String, String, String) -> Unit, 
     onNavigateToRegister: () -> Unit,
     dao: com.gocamping.data.AppDao
 ) {
@@ -207,7 +207,7 @@ fun LoginScreen(
                                 val user = dao.login(trimmedId, trimmedPassword)
                                 if (user != null && user.role.equals(selectedRole, ignoreCase = true)) {
                                     with(kotlinx.coroutines.Dispatchers.Main) {
-                                        onNavigateToDashboard(user.role, user.id, user.roleSpecific1)
+                                        onNavigateToDashboard(user.role, user.id, user.roleSpecific1 ?: "")
                                     }
                                 } else {
                                     with(kotlinx.coroutines.Dispatchers.Main) {
