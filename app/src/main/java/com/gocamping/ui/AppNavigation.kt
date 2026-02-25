@@ -18,6 +18,7 @@ fun AppNavigation(navController: NavHostController = rememberNavController()) {
 
     var currentUserRole by remember { mutableStateOf("Guest") }
     var currentUserId by remember { mutableStateOf("") }
+    var targetStudentId by remember { mutableStateOf<String?>(null) }
 
     NavHost(navController = navController, startDestination = Screen.Splash.route) {
         composable(Screen.Splash.route) {
@@ -31,13 +32,14 @@ fun AppNavigation(navController: NavHostController = rememberNavController()) {
         }
         composable(Screen.Login.route) {
             LoginScreen(
-                onNavigateToDashboard = { role, id ->
+                onNavigateToDashboard = { role, id, studentId ->
                     currentUserRole = role
                     currentUserId = id
-                    val targetRoute = when (role) {
-                        "Student" -> Screen.StudentDashboard.route
-                        "Staff" -> Screen.StaffDashboard.route
-                        "Parent" -> Screen.ParentDashboard.route
+                    targetStudentId = if (role.equals("Student", ignoreCase = true)) id else studentId
+                    val targetRoute = when {
+                        role.equals("Student", ignoreCase = true) -> Screen.StudentDashboard.route
+                        role.equals("Staff", ignoreCase = true) -> Screen.StaffDashboard.route
+                        role.equals("Parent", ignoreCase = true) -> Screen.ParentDashboard.route
                         else -> Screen.Login.route
                     }
                     navController.navigate(targetRoute) {
@@ -136,16 +138,34 @@ fun AppNavigation(navController: NavHostController = rememberNavController()) {
 
         // Module Screens
         composable(Screen.Attendance.route) {
-            AttendanceScreen(role = currentUserRole, userId = currentUserId, dao = dao, onBack = { navController.popBackStack() })
+            AttendanceScreen(
+                role = currentUserRole, 
+                userId = currentUserId, 
+                studentId = targetStudentId, 
+                dao = dao, 
+                onBack = { navController.popBackStack() }
+            )
         }
         composable(Screen.Alert.route) {
             AlertScreen(role = currentUserRole, userId = currentUserId, dao = dao, onBack = { navController.popBackStack() })
         }
         composable(Screen.Payment.route) {
-            PaymentScreen(role = currentUserRole, userId = currentUserId, dao = dao, onBack = { navController.popBackStack() })
+            PaymentScreen(
+                role = currentUserRole, 
+                userId = currentUserId, 
+                studentId = targetStudentId, 
+                dao = dao, 
+                onBack = { navController.popBackStack() }
+            )
         }
         composable(Screen.Feedback.route) {
-            FeedbackScreen(role = currentUserRole, userId = currentUserId, dao = dao, onBack = { navController.popBackStack() })
+            FeedbackScreen(
+                role = currentUserRole, 
+                userId = currentUserId, 
+                studentId = targetStudentId, 
+                dao = dao, 
+                onBack = { navController.popBackStack() }
+            )
         }
         composable(Screen.Archiving.route) {
             ArchivingScreen(dao = dao, onBack = { navController.popBackStack() })

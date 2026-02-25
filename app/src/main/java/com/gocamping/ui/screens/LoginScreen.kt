@@ -27,15 +27,16 @@ import kotlinx.coroutines.launch
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun LoginScreen(
-    onNavigateToDashboard: (String, String) -> Unit, 
+    onNavigateToDashboard: (String, String, String?) -> Unit, 
     onNavigateToRegister: () -> Unit,
     dao: com.gocamping.data.AppDao
 ) {
-    var username by remember { mutableStateOf("") }
+    var userId by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
     var selectedRole by remember { mutableStateOf("Student") }
     var expanded by remember { mutableStateOf(false) }
     var showError by remember { mutableStateOf(false) }
+    var errorMessage by remember { mutableStateOf<String?>(null) }
     val roles = listOf("Student", "Staff", "Parent")
     
     val scope = rememberCoroutineScope()
@@ -144,12 +145,13 @@ fun LoginScreen(
                 Spacer(modifier = Modifier.height(16.dp))
 
                 OutlinedTextField(
-                    value = username,
+                    value = userId,
                     onValueChange = { 
-                        username = it
+                        userId = it
                         showError = false
+                        errorMessage = null
                     },
-                    placeholder = { Text("Username") },
+                    placeholder = { Text("User ID") },
                     modifier = Modifier.fillMaxWidth(),
                     shape = RoundedCornerShape(8.dp),
                     isError = showError,
@@ -165,6 +167,7 @@ fun LoginScreen(
                     onValueChange = { 
                         password = it
                         showError = false
+                        errorMessage = null
                     },
                     placeholder = { Text("Password") },
                     visualTransformation = PasswordVisualTransformation(),
@@ -177,26 +180,45 @@ fun LoginScreen(
                     )
                 )
                 
+                if (errorMessage != null) {
+                    Text(
+                        text = errorMessage!!,
+                        color = MaterialTheme.colorScheme.error,
+                        style = MaterialTheme.typography.bodySmall,
+                        modifier = Modifier.padding(top = 8.dp)
+                    )
+                }
+
                 Spacer(modifier = Modifier.height(32.dp))
 
                 Button(
                     onClick = { 
+                        val trimmedId = userId.trim()
+                        val trimmedPassword = password.trim()
+
+                        if (trimmedId.isBlank() || trimmedPassword.isBlank()) {
+                            showError = true
+                            errorMessage = "All fields are required"
+                            return@Button
+                        }
+
                         scope.launch(kotlinx.coroutines.Dispatchers.IO) {
                             try {
-                                val user = dao.login(username, password)
-                                if (user != null && user.role == selectedRole) {
+                                val user = dao.login(trimmedId, trimmedPassword)
+                                if (user != null && user.role.equals(selectedRole, ignoreCase = true)) {
                                     with(kotlinx.coroutines.Dispatchers.Main) {
-                                        onNavigateToDashboard(user.role, user.id)
+                                        onNavigateToDashboard(user.role, user.id, user.roleSpecific1)
                                     }
                                 } else {
                                     with(kotlinx.coroutines.Dispatchers.Main) {
                                         showError = true
+                                        errorMessage = "Invalid ID, password, or role"
                                     }
                                 }
                             } catch (e: Exception) {
                                 with(kotlinx.coroutines.Dispatchers.Main) {
-                                    // Optionally show a different error or log it
                                     showError = true
+                                    errorMessage = "Error: ${e.message}"
                                 }
                             }
                         }

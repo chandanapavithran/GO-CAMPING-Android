@@ -105,6 +105,9 @@ interface AppDao {
     @Query("SELECT * FROM feedback WHERE isArchived = 0")
     suspend fun getAllActiveFeedback(): List<Feedback>
 
+    @Query("SELECT * FROM users WHERE role = 'Student' AND isArchived = 0")
+    suspend fun getAllStudents(): List<User>
+
     // Archiving
     @Query("UPDATE users SET isArchived = 1 WHERE role = :role")
     suspend fun archiveUsersByRole(role: String)

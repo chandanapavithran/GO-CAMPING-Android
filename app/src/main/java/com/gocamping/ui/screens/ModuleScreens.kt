@@ -21,6 +21,7 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import java.time.LocalDate
+import androidx.compose.foundation.clickable
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -55,31 +56,60 @@ fun ModuleScreenBase(title: String, onBack: () -> Unit, content: @Composable Col
 // --- Attendance ---
 
 @Composable
-fun AttendanceScreen(role: String, userId: String, dao: com.gocamping.data.AppDao, onBack: () -> Unit) {
+fun AttendanceScreen(role: String, userId: String, studentId: String?, dao: com.gocamping.data.AppDao, onBack: () -> Unit) {
     ModuleScreenBase("Attendance", onBack) {
-        if (role == "Staff") {
+        if (role.equals("Staff", ignoreCase = true)) {
             StaffAttendanceContent(dao)
         } else {
-            ViewAttendanceContent(dao, userId, role)
+            // For parents and students, studentId is what matters
+            ViewAttendanceContent(dao, studentId ?: userId, role)
         }
     }
 }
 
 @Composable
 fun StaffAttendanceContent(dao: com.gocamping.data.AppDao) {
-    var studentId by remember { mutableStateOf("") }
+    var students by remember { mutableStateOf<List<com.gocamping.data.User>>(emptyList()) }
+    var selectedStudentId by remember { mutableStateOf<String?>(null) }
     var selectedStatus by remember { mutableStateOf("Present") }
     val scope = rememberCoroutineScope()
+    var message by remember { mutableStateOf<String?>(null) }
+
+    LaunchedEffect(Unit) {
+        scope.launch(kotlinx.coroutines.Dispatchers.IO) {
+            students = dao.getAllStudents()
+        }
+    }
     
     Text("Mark Today's Attendance", style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold)
     Spacer(modifier = Modifier.height(16.dp))
     
-    OutlinedTextField(
-        value = studentId,
-        onValueChange = { studentId = it },
-        label = { Text("Student ID") },
-        modifier = Modifier.fillMaxWidth()
-    )
+    if (students.isEmpty()) {
+        Text("No students found in database", color = Color.Gray)
+    } else {
+        Text("Select Student:", style = MaterialTheme.typography.bodyMedium)
+        LazyColumn(modifier = Modifier.heightIn(max = 300.dp)) {
+            items(students) { student ->
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(vertical = 4.dp)
+                        .background(
+                            if (selectedStudentId == student.id) CampingGreenHeader.copy(alpha = 0.2f) 
+                            else Color.Transparent,
+                            RoundedCornerShape(8.dp)
+                        )
+                        .clickable { selectedStudentId = student.id },
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    RadioButton(selected = selectedStudentId == student.id, onClick = { selectedStudentId = student.id })
+                    Text("${student.name} (${student.id})", modifier = Modifier.padding(start = 8.dp))
+                }
+            }
+        }
+    }
+    
+    Spacer(modifier = Modifier.height(16.dp))
     
     Row(verticalAlignment = Alignment.CenterVertically) {
         RadioButton(selected = selectedStatus == "Present", onClick = { selectedStatus = "Present" })
@@ -89,31 +119,52 @@ fun StaffAttendanceContent(dao: com.gocamping.data.AppDao) {
         Text("Absent")
     }
     
+    Spacer(modifier = Modifier.height(16.dp))
+
     Button(
         onClick = { 
+            val targetId = selectedStudentId
+            if (targetId == null) {
+                message = "Please select a student"
+                return@Button
+            }
             scope.launch(kotlinx.coroutines.Dispatchers.IO) {
-                val record = com.gocamping.data.Attendance(
-                    date = java.time.LocalDate.now().toString(),
-                    studentId = studentId,
-                    status = selectedStatus
-                )
-                dao.insertAttendance(record)
+                try {
+                    val record = com.gocamping.data.Attendance(
+                        date = java.time.LocalDate.now().toString(),
+                        studentId = targetId,
+                        status = selectedStatus
+                    )
+                    dao.insertAttendance(record)
+                    with(kotlinx.coroutines.Dispatchers.Main) {
+                        message = "Attendance marked successfully"
+                    }
+                } catch (e: Exception) {
+                    with(kotlinx.coroutines.Dispatchers.Main) {
+                        message = "Error: ${e.message}"
+                    }
+                }
             }
         }, 
-        modifier = Modifier.fillMaxWidth()
+        modifier = Modifier.fillMaxWidth(),
+        enabled = selectedStudentId != null
     ) {
         Text("Submit Attendance")
+    }
+
+    if (message != null) {
+        Text(message!!, modifier = Modifier.padding(top = 8.dp), color = CampingGreenHeader)
     }
 }
 
 @Composable
-fun ViewAttendanceContent(dao: com.gocamping.data.AppDao, userId: String, role: String) {
+fun ViewAttendanceContent(dao: com.gocamping.data.AppDao, studentId: String, role: String) {
     val records = remember { mutableStateListOf<com.gocamping.data.Attendance>() }
     val scope = rememberCoroutineScope()
     
-    LaunchedEffect(Unit) {
+    LaunchedEffect(studentId) {
         scope.launch(kotlinx.coroutines.Dispatchers.IO) {
-            val list = if (role == "Student") dao.getAttendanceForStudent(userId) else dao.getAllActiveAttendance()
+            val list = dao.getAttendanceForStudent(studentId)
             with(kotlinx.coroutines.Dispatchers.Main) {
                 records.clear()
                 records.addAll(list)
@@ -121,13 +172,32 @@ fun ViewAttendanceContent(dao: com.gocamping.data.AppDao, userId: String, role: 
         }
     }
 
-    Text("Attendance History", style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold)
+    Text("Attendance Records for $studentId", style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold)
     Spacer(modifier = Modifier.height(16.dp))
     
-    LazyColumn(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-        items(records) { record ->
-            Card(modifier = Modifier.fillMaxWidth()) {
-                Text("${record.date}: ${record.status} (${record.studentId})", modifier = Modifier.padding(16.dp))
+    if (records.isEmpty()) {
+        Text("No attendance records found.", color = Color.Gray)
+    } else {
+        LazyColumn(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+            items(records) { record ->
+                Card(
+                    modifier = Modifier.fillMaxWidth(),
+                    colors = CardDefaults.cardColors(
+                        containerColor = if (record.status == "Present") Color(0xFFE8F5E9) else Color(0xFFFFEBEE)
+                    )
+                ) {
+                    Row(
+                        modifier = Modifier.padding(16.dp).fillMaxWidth(),
+                        horizontalArrangement = Arrangement.SpaceBetween
+                    ) {
+                        Text(record.date, fontWeight = FontWeight.Medium)
+                        Text(
+                            record.status, 
+                            fontWeight = FontWeight.Bold,
+                            color = if (record.status == "Present") Color(0xFF2E7D32) else Color(0xFFC62828)
+                        )
+                    }
+                }
             }
         }
     }
@@ -225,20 +295,20 @@ fun ViewAlertContent(dao: com.gocamping.data.AppDao, role: String) {
 // --- Payments ---
 
 @Composable
-fun PaymentScreen(role: String, userId: String, dao: com.gocamping.data.AppDao, onBack: () -> Unit) {
+fun PaymentScreen(role: String, userId: String, studentId: String?, dao: com.gocamping.data.AppDao, onBack: () -> Unit) {
     ModuleScreenBase("Payments", onBack) {
-        if (role == "Parent") {
-            ParentPaymentContent(dao, userId)
-        } else if (role == "Staff") {
+        if (role.equals("Parent", ignoreCase = true)) {
+            ParentPaymentContent(dao, userId, studentId)
+        } else if (role.equals("Staff", ignoreCase = true)) {
             StaffPaymentContent(dao)
         }
     }
 }
 
 @Composable
-fun ParentPaymentContent(dao: com.gocamping.data.AppDao, userId: String) {
+fun ParentPaymentContent(dao: com.gocamping.data.AppDao, userId: String, initialStudentId: String?) {
     var amount by remember { mutableStateOf("") }
-    var studentId by remember { mutableStateOf("") }
+    var studentId by remember { mutableStateOf(initialStudentId ?: "") }
     val scope = rememberCoroutineScope()
     val payments = remember { mutableStateListOf<com.gocamping.data.Payment>() }
     
@@ -325,10 +395,10 @@ fun StaffPaymentContent(dao: com.gocamping.data.AppDao) {
 // --- Feedback ---
 
 @Composable
-fun FeedbackScreen(role: String, userId: String, dao: com.gocamping.data.AppDao, onBack: () -> Unit) {
+fun FeedbackScreen(role: String, userId: String, studentId: String?, dao: com.gocamping.data.AppDao, onBack: () -> Unit) {
     ModuleScreenBase("Camp Feedback", onBack) {
-        if (role == "Student" || role == "Parent") {
-            SubmitFeedbackContent(dao, userId)
+        if (role.equals("Student", ignoreCase = true) || role.equals("Parent", ignoreCase = true)) {
+            SubmitFeedbackContent(dao, studentId ?: userId)
         } else {
             StaffFeedbackContent(dao)
         }

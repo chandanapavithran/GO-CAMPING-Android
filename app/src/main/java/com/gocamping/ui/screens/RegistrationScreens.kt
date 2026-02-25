@@ -360,7 +360,8 @@ fun RegistrationFormBase(
 
                 Button(
                     onClick = { 
-                        if (id.isBlank() || name.isBlank() || contact.isBlank() || password.isBlank()) {
+                        val trimmedId = id.trim()
+                        if (trimmedId.isBlank() || name.isBlank() || contact.isBlank() || password.isBlank()) {
                             errorMessage = "All fields are required"
                             return@Button
                         }
@@ -368,7 +369,7 @@ fun RegistrationFormBase(
                         scope.launch(kotlinx.coroutines.Dispatchers.IO) {
                             try {
                                 // Check if user exists
-                                val existingUser = dao.getUserById(id)
+                                val existingUser = dao.getUserById(trimmedId)
                                 if (existingUser != null) {
                                     with(kotlinx.coroutines.Dispatchers.Main) {
                                         errorMessage = "Account with this ID already exists"
@@ -386,7 +387,7 @@ fun RegistrationFormBase(
                                 }
 
                                 val user = com.gocamping.data.User(
-                                    id = id,
+                                    id = trimmedId,
                                     name = name,
                                     role = role,
                                     contactNo = contact,
