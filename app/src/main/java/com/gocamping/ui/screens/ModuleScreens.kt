@@ -117,47 +117,136 @@ fun AttendanceScreen(role: String, userId: String, studentId: String?, dao: com.
     }
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun StaffAttendanceContent(dao: com.gocamping.data.AppDao) {
     var students by remember { mutableStateOf<List<com.gocamping.data.User>>(emptyList()) }
-    var selectedStudentId by remember { mutableStateOf<String?>(null) }
-    var selectedStatus by remember { mutableStateOf("Present") }
+    var attendanceMap by remember { mutableStateOf<Map<String, String>>(emptyMap()) }
+    var selectedDate by remember { mutableStateOf(java.time.LocalDate.now().toString()) }
+    var showDatePicker by remember { mutableStateOf(false) }
     val scope = rememberCoroutineScope()
     var message by remember { mutableStateOf<String?>(null) }
 
     LaunchedEffect(Unit) {
         scope.launch(kotlinx.coroutines.Dispatchers.IO) {
-            students = dao.getAllStudents()
+            val list = dao.getAllStudents()
+            students = list
+            // Initialize all as Present by default as per common flow
+            attendanceMap = list.associate { it.id to "Present" }
         }
     }
     
-    Text("Mark Today's Attendance", style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold, color = CampingTextDark)
+    if (showDatePicker) {
+        val datePickerState = rememberDatePickerState()
+        DatePickerDialog(
+            onDismissRequest = { showDatePicker = false },
+            confirmButton = {
+                TextButton(onClick = {
+                    datePickerState.selectedDateMillis?.let {
+                        val instant = java.time.Instant.ofEpochMilli(it)
+                        selectedDate = instant.atZone(java.time.ZoneId.systemDefault()).toLocalDate().toString()
+                    }
+                    showDatePicker = false
+                }) { Text("OK") }
+            }
+        ) {
+            DatePicker(state = datePickerState)
+        }
+    }
+
+    Text("Attendance Marking", style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold, color = CampingTextDark)
+    Spacer(modifier = Modifier.height(16.dp))
+
+    // Manual Date Entry
+    OutlinedTextField(
+        value = "Date: $selectedDate",
+        onValueChange = { },
+        readOnly = true,
+        modifier = Modifier.fillMaxWidth().clickable { showDatePicker = true },
+        trailingIcon = { 
+            IconButton(onClick = { showDatePicker = true }) {
+                Icon(Icons.Default.DateRange, contentDescription = "Select Date") 
+            }
+        },
+        shape = RoundedCornerShape(8.dp),
+        colors = OutlinedTextFieldDefaults.colors(
+            focusedBorderColor = Color.LightGray,
+            unfocusedBorderColor = Color.LightGray
+        ),
+        enabled = false // Make the field clickable but not typeable
+    )
+    
     Spacer(modifier = Modifier.height(16.dp))
     
     if (students.isEmpty()) {
         Text("No students found in database", color = Color.Gray)
     } else {
-        Text("Select Student:", style = MaterialTheme.typography.bodyMedium, color = CampingTextDark)
-        LazyColumn(modifier = Modifier.heightIn(max = 300.dp)) {
+        LazyColumn(verticalArrangement = Arrangement.spacedBy(8.dp), modifier = Modifier.heightIn(max = 400.dp)) {
             items(students) { student ->
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(vertical = 4.dp)
-                        .background(
-                            if (selectedStudentId == student.id) CampingGreenHeader.copy(alpha = 0.2f) 
-                            else Color.Transparent,
-                            RoundedCornerShape(8.dp)
-                        )
-                        .clickable { selectedStudentId = student.id },
-                    verticalAlignment = Alignment.CenterVertically
+                val currentStatus = attendanceMap[student.id] ?: "Present"
+                Card(
+                    modifier = Modifier.fillMaxWidth(),
+                    shape = RoundedCornerShape(12.dp),
+                    colors = CardDefaults.cardColors(containerColor = Color.White),
+                    elevation = CardDefaults.cardElevation(defaultElevation = 1.dp)
                 ) {
-                    RadioButton(
-                        selected = selectedStudentId == student.id, 
-                        onClick = { selectedStudentId = student.id },
-                        colors = RadioButtonDefaults.colors(selectedColor = CampingGreenHeader)
-                    )
-                    Text("${student.name} (${student.id})", modifier = Modifier.padding(start = 8.dp), color = CampingTextDark)
+                    Row(
+                        modifier = Modifier.padding(12.dp).fillMaxWidth(),
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.SpaceBetween
+                    ) {
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                            Surface(
+                                modifier = Modifier.size(40.dp),
+                                shape = RoundedCornerShape(20.dp),
+                                color = Color.LightGray.copy(alpha = 0.3f)
+                            ) {
+                                Icon(Icons.Default.Person, contentDescription = null, modifier = Modifier.padding(8.dp), tint = Color.Gray)
+                            }
+                            Spacer(modifier = Modifier.width(12.dp))
+                            Column {
+                                Text(student.name, fontWeight = FontWeight.Bold, color = CampingTextDark)
+                                Text("(${student.id})", style = MaterialTheme.typography.bodySmall, color = Color.Gray)
+                            }
+                        }
+                        
+                        // Custom Present/Absent Toggle
+                        Row(
+                            modifier = Modifier
+                                .background(Color(0xFFEEEEEE), RoundedCornerShape(20.dp))
+                                .padding(2.dp)
+                        ) {
+                            val presentColor = if (currentStatus == "Present") CampingGreenHeader else Color.Transparent
+                            val presentTextColor = if (currentStatus == "Present") Color.White else Color.Gray
+                            
+                            val absentColor = if (currentStatus == "Absent") Color(0xFFC62828) else Color.Transparent
+                            val absentTextColor = if (currentStatus == "Absent") Color.White else Color.Gray
+
+                            Box(
+                                modifier = Modifier
+                                    .background(presentColor, RoundedCornerShape(20.dp))
+                                    .clickable { attendanceMap = attendanceMap + (student.id to "Present") }
+                                    .padding(horizontal = 12.dp, vertical = 6.dp)
+                            ) {
+                                Row(verticalAlignment = Alignment.CenterVertically) {
+                                    if (currentStatus == "Present") {
+                                        Icon(Icons.Default.CheckCircle, contentDescription = null, modifier = Modifier.size(14.dp), tint = Color.White)
+                                        Spacer(modifier = Modifier.width(4.dp))
+                                    }
+                                    Text("Present", color = presentTextColor, style = MaterialTheme.typography.labelSmall)
+                                }
+                            }
+                            
+                            Box(
+                                modifier = Modifier
+                                    .background(absentColor, RoundedCornerShape(20.dp))
+                                    .clickable { attendanceMap = attendanceMap + (student.id to "Absent") }
+                                    .padding(horizontal = 12.dp, vertical = 6.dp)
+                            ) {
+                                Text("Absent", color = absentTextColor, style = MaterialTheme.typography.labelSmall)
+                            }
+                        }
+                    }
                 }
             }
         }
@@ -165,31 +254,32 @@ fun StaffAttendanceContent(dao: com.gocamping.data.AppDao) {
     
     Spacer(modifier = Modifier.height(16.dp))
     
-    Row(verticalAlignment = Alignment.CenterVertically) {
-        RadioButton(selected = selectedStatus == "Present", onClick = { selectedStatus = "Present" }, colors = RadioButtonDefaults.colors(selectedColor = CampingGreenHeader))
-        Text("Present", color = CampingTextDark)
-        Spacer(modifier = Modifier.width(16.dp))
-        RadioButton(selected = selectedStatus == "Absent", onClick = { selectedStatus = "Absent" }, colors = RadioButtonDefaults.colors(selectedColor = CampingGreenHeader))
-        Text("Absent", color = CampingTextDark)
+    Button(
+        onClick = { 
+            attendanceMap = students.associate { it.id to "Present" }
+        },
+        modifier = Modifier.fillMaxWidth().height(48.dp),
+        colors = ButtonDefaults.buttonColors(containerColor = Color.White),
+        border = androidx.compose.foundation.BorderStroke(1.dp, Color.LightGray),
+        shape = RoundedCornerShape(8.dp)
+    ) {
+        Text("Mark All Present", color = CampingTextDark)
     }
-    
-    Spacer(modifier = Modifier.height(24.dp))
+
+    Spacer(modifier = Modifier.height(12.dp))
 
     Button(
         onClick = { 
-            val targetId = selectedStudentId
-            if (targetId == null) {
-                message = "Please select a student"
-                return@Button
-            }
             scope.launch(kotlinx.coroutines.Dispatchers.IO) {
                 try {
-                    val record = com.gocamping.data.Attendance(
-                        date = java.time.LocalDate.now().toString(),
-                        studentId = targetId,
-                        status = selectedStatus
-                    )
-                    dao.insertAttendance(record)
+                    students.forEach { student ->
+                        val record = com.gocamping.data.Attendance(
+                            date = selectedDate,
+                            studentId = student.id,
+                            status = attendanceMap[student.id] ?: "Present"
+                        )
+                        dao.insertAttendance(record)
+                    }
                     withContext(kotlinx.coroutines.Dispatchers.Main) {
                         message = "Attendance marked successfully"
                     }
@@ -201,11 +291,11 @@ fun StaffAttendanceContent(dao: com.gocamping.data.AppDao) {
             }
         }, 
         modifier = Modifier.fillMaxWidth().height(56.dp),
-        enabled = selectedStudentId != null,
+        enabled = students.isNotEmpty(),
         shape = RoundedCornerShape(8.dp),
         colors = ButtonDefaults.buttonColors(containerColor = CampingGreenHeader)
     ) {
-        Text("Submit Attendance", fontWeight = FontWeight.Bold)
+        Text("Mark Attendance", fontWeight = FontWeight.Bold)
     }
 
     if (message != null) {
