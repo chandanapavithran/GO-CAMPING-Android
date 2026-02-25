@@ -369,36 +369,83 @@ fun AlertScreen(role: String, userId: String, dao: com.gocamping.data.AppDao, on
     }
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun StaffAlertContent(dao: com.gocamping.data.AppDao) {
     var alertText by remember { mutableStateOf("") }
-    var alertType by remember { mutableStateOf("Info") }
+    var selectedDate by remember { mutableStateOf(java.time.LocalDate.now().toString()) }
     var targetGroup by remember { mutableStateOf("All") }
+    var showDatePicker by remember { mutableStateOf(false) }
+    var message by remember { mutableStateOf<String?>(null) }
     val scope = rememberCoroutineScope()
     
+    if (showDatePicker) {
+        val datePickerState = rememberDatePickerState()
+        DatePickerDialog(
+            onDismissRequest = { showDatePicker = false },
+            confirmButton = {
+                TextButton(onClick = {
+                    datePickerState.selectedDateMillis?.let {
+                        val instant = java.time.Instant.ofEpochMilli(it)
+                        selectedDate = instant.atZone(java.time.ZoneId.systemDefault()).toLocalDate().toString()
+                    }
+                    showDatePicker = false
+                }) { Text("OK") }
+            }
+        ) {
+            DatePicker(state = datePickerState)
+        }
+    }
+
     Text("Send New Alert", style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold, color = CampingTextDark)
     Spacer(modifier = Modifier.height(16.dp))
     
+    // Manual Date Entry
     OutlinedTextField(
-        value = alertText,
-        onValueChange = { alertText = it },
-        placeholder = { Text("Message") },
-        modifier = Modifier.fillMaxWidth().height(120.dp),
-        shape = RoundedCornerShape(8.dp)
+        value = "Date: $selectedDate",
+        onValueChange = { },
+        readOnly = true,
+        modifier = Modifier.fillMaxWidth().clickable { showDatePicker = true },
+        trailingIcon = { 
+            IconButton(onClick = { showDatePicker = true }) {
+                Icon(Icons.Default.DateRange, contentDescription = "Select Date") 
+            }
+        },
+        shape = RoundedCornerShape(8.dp),
+        colors = OutlinedTextFieldDefaults.colors(
+            focusedBorderColor = Color.LightGray,
+            unfocusedBorderColor = Color.LightGray
+        ),
+        enabled = false
     )
     
     Spacer(modifier = Modifier.height(16.dp))
 
+    OutlinedTextField(
+        value = alertText,
+        onValueChange = { alertText = it },
+        placeholder = { Text("Enter alert message...") },
+        modifier = Modifier.fillMaxWidth().height(120.dp),
+        shape = RoundedCornerShape(8.dp),
+        colors = OutlinedTextFieldDefaults.colors(
+            focusedBorderColor = CampingGreenHeader,
+            unfocusedBorderColor = Color.LightGray
+        )
+    )
+    
+    Spacer(modifier = Modifier.height(16.dp))
+
+    Text("Target Group:", style = MaterialTheme.typography.bodyMedium, fontWeight = FontWeight.Medium, color = CampingTextDark)
     Row(verticalAlignment = Alignment.CenterVertically) {
-        Text("Target: ", color = CampingTextDark, fontWeight = FontWeight.Medium)
         listOf("All", "Student", "Parent").forEach { group ->
-            Row(verticalAlignment = Alignment.CenterVertically) {
+            Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.clickable { targetGroup = group }) {
                 RadioButton(
                     selected = targetGroup == group, 
                     onClick = { targetGroup = group },
                     colors = RadioButtonDefaults.colors(selectedColor = CampingGreenHeader)
                 )
                 Text(group, style = MaterialTheme.typography.bodySmall, color = CampingTextDark)
+                Spacer(modifier = Modifier.width(8.dp))
             }
         }
     }
@@ -407,15 +454,28 @@ fun StaffAlertContent(dao: com.gocamping.data.AppDao) {
 
     Button(
         onClick = { 
-            if (alertText.isBlank()) return@Button
+            if (alertText.isBlank()) {
+                message = "Please enter a message"
+                return@Button
+            }
             scope.launch(kotlinx.coroutines.Dispatchers.IO) {
-                val alert = com.gocamping.data.Alert(
-                    date = java.time.LocalDate.now().toString(),
-                    type = alertType,
-                    content = alertText,
-                    targetGroup = targetGroup
-                )
-                dao.insertAlert(alert)
+                try {
+                    val alert = com.gocamping.data.Alert(
+                        date = selectedDate,
+                        type = "Important",
+                        content = alertText,
+                        targetGroup = targetGroup
+                    )
+                    dao.insertAlert(alert)
+                    withContext(kotlinx.coroutines.Dispatchers.Main) {
+                        message = "Alert broadcasted successfully"
+                        alertText = ""
+                    }
+                } catch (e: Exception) {
+                    withContext(kotlinx.coroutines.Dispatchers.Main) {
+                        message = "Error: ${e.message}"
+                    }
+                }
             }
         }, 
         modifier = Modifier.fillMaxWidth().height(56.dp),
@@ -424,6 +484,10 @@ fun StaffAlertContent(dao: com.gocamping.data.AppDao) {
     ) {
         Text("Broadcast Alert", fontWeight = FontWeight.Bold)
     }
+
+    if (message != null) {
+        Text(message!!, modifier = Modifier.padding(top = 8.dp), color = CampingGreenHeader)
+    }
 }
 
 @Composable
@@ -431,10 +495,12 @@ fun ViewAlertContent(dao: com.gocamping.data.AppDao, role: String) {
     val alerts = remember { mutableStateListOf<com.gocamping.data.Alert>() }
     
     LaunchedEffect(Unit) {
-        kotlinx.coroutines.Dispatchers.IO.let { io ->
+        kotlinx.coroutines.Dispatchers.IO.let { 
             val list = dao.getAlertsForRole(role)
-            alerts.clear()
-            alerts.addAll(list)
+            withContext(kotlinx.coroutines.Dispatchers.Main) {
+                alerts.clear()
+                alerts.addAll(list)
+            }
         }
     }
 
@@ -479,6 +545,7 @@ fun PaymentScreen(role: String, userId: String, studentId: String?, dao: com.goc
 fun ParentPaymentContent(dao: com.gocamping.data.AppDao, userId: String, initialStudentId: String?) {
     var amount by remember { mutableStateOf("") }
     var studentId by remember { mutableStateOf(initialStudentId ?: "") }
+    var showDialog by remember { mutableStateOf<Boolean?>(null) } // null = none, true = success, false = fail
     val scope = rememberCoroutineScope()
     val payments = remember { mutableStateListOf<com.gocamping.data.Payment>() }
     
@@ -492,6 +559,22 @@ fun ParentPaymentContent(dao: com.gocamping.data.AppDao, userId: String, initial
         }
     }
 
+    if (showDialog != null) {
+        AlertDialog(
+            onDismissRequest = { showDialog = null },
+            title = { Text(if (showDialog == true) "Success" else "Error") },
+            text = { Text(if (showDialog == true) "payment success" else "payment unsuccessful") },
+            confirmButton = {
+                Button(
+                    onClick = { showDialog = null },
+                    colors = ButtonDefaults.buttonColors(containerColor = if (showDialog == true) CampingGreenHeader else Color(0xFFC62828))
+                ) {
+                    Text("OK")
+                }
+            }
+        )
+    }
+
     Text("Make a Payment", style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold, color = CampingTextDark)
     Spacer(modifier = Modifier.height(16.dp))
     
@@ -500,31 +583,60 @@ fun ParentPaymentContent(dao: com.gocamping.data.AppDao, userId: String, initial
         onValueChange = { studentId = it },
         placeholder = { Text("Student ID") },
         modifier = Modifier.fillMaxWidth(),
-        shape = RoundedCornerShape(8.dp)
+        shape = RoundedCornerShape(8.dp),
+        colors = OutlinedTextFieldDefaults.colors(
+            focusedBorderColor = CampingGreenHeader,
+            unfocusedBorderColor = Color.LightGray
+        )
     )
     Spacer(modifier = Modifier.height(12.dp))
     OutlinedTextField(
         value = amount,
         onValueChange = { amount = it },
-        placeholder = { Text("Amount ($)") },
+        placeholder = { Text("Enter Amount") },
         modifier = Modifier.fillMaxWidth(),
-        shape = RoundedCornerShape(8.dp)
+        shape = RoundedCornerShape(8.dp),
+        colors = OutlinedTextFieldDefaults.colors(
+            focusedBorderColor = CampingGreenHeader,
+            unfocusedBorderColor = Color.LightGray
+        ),
+        keyboardOptions = androidx.compose.foundation.text.KeyboardOptions(keyboardType = androidx.compose.ui.text.input.KeyboardType.Number)
     )
     
     Spacer(modifier = Modifier.height(24.dp))
 
     Button(
         onClick = { 
-            if (amount.isBlank() || studentId.isBlank()) return@Button
+            val amountVal = amount.toDoubleOrNull()
+            if (amountVal == null || amountVal <= 0 || studentId.isBlank()) {
+                showDialog = false
+                return@Button
+            }
             scope.launch(kotlinx.coroutines.Dispatchers.IO) {
-                val p = com.gocamping.data.Payment(
-                    date = java.time.LocalDate.now().toString(),
-                    studentId = studentId,
-                    parentId = userId,
-                    amount = amount.toDoubleOrNull() ?: 0.0,
-                    status = "Completed"
-                )
-                dao.insertPayment(p)
+                try {
+                    val p = com.gocamping.data.Payment(
+                        date = java.time.LocalDate.now().toString(),
+                        studentId = studentId,
+                        parentId = userId,
+                        amount = amountVal,
+                        status = "Completed"
+                    )
+                    dao.insertPayment(p)
+                    
+                    // Refresh list
+                    val updatedList = dao.getPaymentsForParent(userId)
+                    
+                    withContext(kotlinx.coroutines.Dispatchers.Main) {
+                        payments.clear()
+                        payments.addAll(updatedList)
+                        showDialog = true
+                        amount = ""
+                    }
+                } catch (e: Exception) {
+                    withContext(kotlinx.coroutines.Dispatchers.Main) {
+                        showDialog = false
+                    }
+                }
             }
         }, 
         modifier = Modifier.fillMaxWidth().height(56.dp),
@@ -537,20 +649,25 @@ fun ParentPaymentContent(dao: com.gocamping.data.AppDao, userId: String, initial
     Spacer(modifier = Modifier.height(32.dp))
     Text("Payment History", style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold, color = CampingTextDark)
     Spacer(modifier = Modifier.height(8.dp))
-    LazyColumn(verticalArrangement = Arrangement.spacedBy(8.dp), modifier = Modifier.heightIn(max = 300.dp)) {
-        items(payments) { payment ->
-            Card(
-                modifier = Modifier.fillMaxWidth(),
-                shape = RoundedCornerShape(12.dp),
-                colors = CardDefaults.cardColors(containerColor = Color.White),
-                elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
-            ) {
-                Row(modifier = Modifier.padding(16.dp), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
-                    Column {
-                        Text("Amount: $${payment.amount}", fontWeight = FontWeight.Bold, color = CampingGreenHeader)
-                        Text("For: ${payment.studentId}", style = MaterialTheme.typography.bodySmall)
+    
+    if (payments.isEmpty()) {
+        Text("No payment history.", color = Color.Gray, style = MaterialTheme.typography.bodySmall)
+    } else {
+        LazyColumn(verticalArrangement = Arrangement.spacedBy(8.dp), modifier = Modifier.heightIn(max = 300.dp)) {
+            items(payments) { payment ->
+                Card(
+                    modifier = Modifier.fillMaxWidth(),
+                    shape = RoundedCornerShape(12.dp),
+                    colors = CardDefaults.cardColors(containerColor = Color.White),
+                    elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
+                ) {
+                    Row(modifier = Modifier.padding(16.dp), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
+                        Column {
+                            Text("Amount: $${payment.amount}", fontWeight = FontWeight.Bold, color = CampingGreenHeader)
+                            Text("For Student: ${payment.studentId}", style = MaterialTheme.typography.bodySmall, color = CampingTextDark)
+                        }
+                        Text(payment.date, style = MaterialTheme.typography.bodySmall, color = Color.Gray)
                     }
-                    Text(payment.date, style = MaterialTheme.typography.bodySmall, color = Color.Gray)
                 }
             }
         }
@@ -564,8 +681,10 @@ fun StaffPaymentContent(dao: com.gocamping.data.AppDao) {
     LaunchedEffect(Unit) {
         kotlinx.coroutines.Dispatchers.IO.let { 
             val list = dao.getAllActivePayments()
-            records.clear()
-            records.addAll(list)
+            withContext(kotlinx.coroutines.Dispatchers.Main) {
+                records.clear()
+                records.addAll(list)
+            }
         }
     }
 
@@ -585,11 +704,17 @@ fun StaffPaymentContent(dao: com.gocamping.data.AppDao) {
                 ) {
                     Column(modifier = Modifier.padding(16.dp)) {
                         Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
-                            Text("Student: ${record.studentId}", fontWeight = FontWeight.Bold, color = CampingTextDark)
-                            Text("$${record.amount}", fontWeight = FontWeight.Bold, color = CampingGreenHeader)
+                            Column {
+                                Text("Student ID: ${record.studentId}", fontWeight = FontWeight.Bold, color = CampingTextDark)
+                                Text("Payer (Parent): ${record.parentId}", style = MaterialTheme.typography.bodySmall, color = Color.Gray)
+                            }
+                            Text("$${record.amount}", fontWeight = FontWeight.Bold, color = CampingGreenHeader, style = MaterialTheme.typography.titleMedium)
                         }
-                        Text("Payer (Parent ID): ${record.parentId}", style = MaterialTheme.typography.bodySmall, color = Color.Gray)
-                        Text("Date: ${record.date}", style = MaterialTheme.typography.bodySmall, color = Color.Gray)
+                        Spacer(modifier = Modifier.height(8.dp))
+                        Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
+                            Text("Status: ${record.status}", style = MaterialTheme.typography.bodySmall, color = CampingGreenHeader, fontWeight = FontWeight.Bold)
+                            Text(record.date, style = MaterialTheme.typography.bodySmall, color = Color.Gray)
+                        }
                     }
                 }
             }
