@@ -32,7 +32,7 @@ fun AppNavigation(navController: NavHostController = rememberNavController()) {
         }
         composable(Screen.Login.route) {
             LoginScreen(
-                onNavigateToDashboard = { role, id, studentId ->
+                onNavigateToDashboard = { role: String, id: String, studentId: String? ->
                     currentUserRole = role
                     currentUserId = id
                     targetStudentId = if (role.equals("Student", ignoreCase = true)) id else studentId
