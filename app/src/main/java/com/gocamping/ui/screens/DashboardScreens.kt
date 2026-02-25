@@ -130,14 +130,6 @@ fun ParentDashboardScreen(onLogout: () -> Unit, onNavigateToModule: (String) -> 
                 VividOrange
             ) { onNavigateToModule(Screen.Alert.route) }
         }
-        item {
-            DashboardCard(
-                "Contact/Feedback",
-                Icons.Default.Email,
-                "Reach out to camp organizers",
-                ElectricPurple
-            ) { onNavigateToModule(Screen.Feedback.route) }
-        }
     }
 }
 

@@ -22,34 +22,84 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import java.time.LocalDate
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.Image
+import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.res.painterResource
+import com.gocamping.R
+import androidx.compose.ui.unit.sp
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
+import com.gocamping.ui.theme.CampingGreenHeader
+import com.gocamping.ui.theme.CampingTextDark
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ModuleScreenBase(title: String, onBack: () -> Unit, content: @Composable ColumnScope.() -> Unit) {
-    Scaffold(
-        topBar = {
-            TopAppBar(
-                title = { Text(title, fontWeight = FontWeight.Bold) },
-                navigationIcon = {
-                    IconButton(onClick = onBack) {
-                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back")
-                    }
-                },
-                colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = MaterialTheme.colorScheme.primary,
-                    titleContentColor = Color.White,
-                    navigationIconContentColor = Color.White
-                )
-            )
-        }
-    ) { padding ->
-        Column(
+    Box(
+        modifier = Modifier.fillMaxSize().background(Color.White)
+    ) {
+        // Bottom Wave
+        Image(
+            painter = painterResource(id = R.drawable.bg_wave),
+            contentDescription = null,
             modifier = Modifier
-                .fillMaxSize()
-                .padding(padding)
-                .padding(16.dp),
-            content = content
+                .fillMaxWidth()
+                .align(Alignment.BottomCenter),
+            contentScale = ContentScale.FillWidth
         )
+
+        Column(modifier = Modifier.fillMaxSize()) {
+            // Refined Header
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .background(CampingGreenHeader)
+                    .padding(16.dp),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                IconButton(onClick = onBack) {
+                    Icon(Icons.Default.ArrowBack, contentDescription = "Back", tint = Color.White)
+                }
+                
+                Spacer(modifier = Modifier.weight(1f))
+                
+                Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                    Image(
+                        painter = painterResource(id = R.drawable.ic_logo),
+                        contentDescription = null,
+                        modifier = Modifier.size(40.dp)
+                    )
+                    Text(
+                        "GO CAMPING",
+                        color = Color.White,
+                        style = MaterialTheme.typography.titleMedium.copy(
+                            fontWeight = FontWeight.Bold,
+                            letterSpacing = 1.sp
+                        )
+                    )
+                }
+                
+                Spacer(modifier = Modifier.weight(1f))
+                Box(modifier = Modifier.size(48.dp))
+            }
+
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 24.dp, vertical = 24.dp),
+                horizontalAlignment = Alignment.CenterHorizontally
+            ) {
+                Text(
+                    title,
+                    style = MaterialTheme.typography.headlineSmall.copy(
+                        fontWeight = FontWeight.Bold,
+                        color = CampingTextDark
+                    )
+                )
+                Spacer(modifier = Modifier.height(24.dp))
+                content()
+            }
+        }
     }
 }
 
@@ -81,13 +131,13 @@ fun StaffAttendanceContent(dao: com.gocamping.data.AppDao) {
         }
     }
     
-    Text("Mark Today's Attendance", style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold)
+    Text("Mark Today's Attendance", style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold, color = CampingTextDark)
     Spacer(modifier = Modifier.height(16.dp))
     
     if (students.isEmpty()) {
         Text("No students found in database", color = Color.Gray)
     } else {
-        Text("Select Student:", style = MaterialTheme.typography.bodyMedium)
+        Text("Select Student:", style = MaterialTheme.typography.bodyMedium, color = CampingTextDark)
         LazyColumn(modifier = Modifier.heightIn(max = 300.dp)) {
             items(students) { student ->
                 Row(
@@ -102,8 +152,12 @@ fun StaffAttendanceContent(dao: com.gocamping.data.AppDao) {
                         .clickable { selectedStudentId = student.id },
                     verticalAlignment = Alignment.CenterVertically
                 ) {
-                    RadioButton(selected = selectedStudentId == student.id, onClick = { selectedStudentId = student.id })
-                    Text("${student.name} (${student.id})", modifier = Modifier.padding(start = 8.dp))
+                    RadioButton(
+                        selected = selectedStudentId == student.id, 
+                        onClick = { selectedStudentId = student.id },
+                        colors = RadioButtonDefaults.colors(selectedColor = CampingGreenHeader)
+                    )
+                    Text("${student.name} (${student.id})", modifier = Modifier.padding(start = 8.dp), color = CampingTextDark)
                 }
             }
         }
@@ -112,14 +166,14 @@ fun StaffAttendanceContent(dao: com.gocamping.data.AppDao) {
     Spacer(modifier = Modifier.height(16.dp))
     
     Row(verticalAlignment = Alignment.CenterVertically) {
-        RadioButton(selected = selectedStatus == "Present", onClick = { selectedStatus = "Present" })
-        Text("Present")
+        RadioButton(selected = selectedStatus == "Present", onClick = { selectedStatus = "Present" }, colors = RadioButtonDefaults.colors(selectedColor = CampingGreenHeader))
+        Text("Present", color = CampingTextDark)
         Spacer(modifier = Modifier.width(16.dp))
-        RadioButton(selected = selectedStatus == "Absent", onClick = { selectedStatus = "Absent" })
-        Text("Absent")
+        RadioButton(selected = selectedStatus == "Absent", onClick = { selectedStatus = "Absent" }, colors = RadioButtonDefaults.colors(selectedColor = CampingGreenHeader))
+        Text("Absent", color = CampingTextDark)
     }
     
-    Spacer(modifier = Modifier.height(16.dp))
+    Spacer(modifier = Modifier.height(24.dp))
 
     Button(
         onClick = { 
@@ -146,10 +200,12 @@ fun StaffAttendanceContent(dao: com.gocamping.data.AppDao) {
                 }
             }
         }, 
-        modifier = Modifier.fillMaxWidth(),
-        enabled = selectedStudentId != null
+        modifier = Modifier.fillMaxWidth().height(56.dp),
+        enabled = selectedStudentId != null,
+        shape = RoundedCornerShape(8.dp),
+        colors = ButtonDefaults.buttonColors(containerColor = CampingGreenHeader)
     ) {
-        Text("Submit Attendance")
+        Text("Submit Attendance", fontWeight = FontWeight.Bold)
     }
 
     if (message != null) {
@@ -172,29 +228,36 @@ fun ViewAttendanceContent(dao: com.gocamping.data.AppDao, studentId: String, rol
         }
     }
 
-    Text("Attendance Records for $studentId", style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold)
+    Text("Attendance Records for $studentId", style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold, color = CampingTextDark)
     Spacer(modifier = Modifier.height(16.dp))
     
     if (records.isEmpty()) {
         Text("No attendance records found.", color = Color.Gray)
     } else {
-        LazyColumn(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+        LazyColumn(verticalArrangement = Arrangement.spacedBy(12.dp), modifier = Modifier.heightIn(max = 500.dp)) {
             items(records) { record ->
                 Card(
                     modifier = Modifier.fillMaxWidth(),
+                    shape = RoundedCornerShape(12.dp),
+                    elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
                     colors = CardDefaults.cardColors(
                         containerColor = if (record.status == "Present") Color(0xFFE8F5E9) else Color(0xFFFFEBEE)
                     )
                 ) {
                     Row(
                         modifier = Modifier.padding(16.dp).fillMaxWidth(),
-                        horizontalArrangement = Arrangement.SpaceBetween
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically
                     ) {
-                        Text(record.date, fontWeight = FontWeight.Medium)
+                        Column {
+                            Text(record.date, fontWeight = FontWeight.Medium, color = CampingTextDark)
+                            Text("Status", style = MaterialTheme.typography.bodySmall, color = Color.Gray)
+                        }
                         Text(
                             record.status, 
                             fontWeight = FontWeight.Bold,
-                            color = if (record.status == "Present") Color(0xFF2E7D32) else Color(0xFFC62828)
+                            color = if (record.status == "Present") Color(0xFF2E7D32) else Color(0xFFC62828),
+                            style = MaterialTheme.typography.titleMedium
                         )
                     }
                 }
@@ -208,7 +271,7 @@ fun ViewAttendanceContent(dao: com.gocamping.data.AppDao, studentId: String, rol
 @Composable
 fun AlertScreen(role: String, userId: String, dao: com.gocamping.data.AppDao, onBack: () -> Unit) {
     ModuleScreenBase("Camp Alerts", onBack) {
-        if (role == "Staff") {
+        if (role.equals("Staff", ignoreCase = true)) {
             StaffAlertContent(dao)
         } else {
             ViewAlertContent(dao, role)
@@ -223,28 +286,38 @@ fun StaffAlertContent(dao: com.gocamping.data.AppDao) {
     var targetGroup by remember { mutableStateOf("All") }
     val scope = rememberCoroutineScope()
     
-    Text("Send New Alert", style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold)
+    Text("Send New Alert", style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold, color = CampingTextDark)
     Spacer(modifier = Modifier.height(16.dp))
     
     OutlinedTextField(
         value = alertText,
         onValueChange = { alertText = it },
-        label = { Text("Message") },
-        modifier = Modifier.fillMaxWidth().height(120.dp)
+        placeholder = { Text("Message") },
+        modifier = Modifier.fillMaxWidth().height(120.dp),
+        shape = RoundedCornerShape(8.dp)
     )
     
+    Spacer(modifier = Modifier.height(16.dp))
+
     Row(verticalAlignment = Alignment.CenterVertically) {
-        Text("Target: ")
+        Text("Target: ", color = CampingTextDark, fontWeight = FontWeight.Medium)
         listOf("All", "Student", "Parent").forEach { group ->
             Row(verticalAlignment = Alignment.CenterVertically) {
-                RadioButton(selected = targetGroup == group, onClick = { targetGroup = group })
-                Text(group, style = MaterialTheme.typography.bodySmall)
+                RadioButton(
+                    selected = targetGroup == group, 
+                    onClick = { targetGroup = group },
+                    colors = RadioButtonDefaults.colors(selectedColor = CampingGreenHeader)
+                )
+                Text(group, style = MaterialTheme.typography.bodySmall, color = CampingTextDark)
             }
         }
     }
     
+    Spacer(modifier = Modifier.height(24.dp))
+
     Button(
         onClick = { 
+            if (alertText.isBlank()) return@Button
             scope.launch(kotlinx.coroutines.Dispatchers.IO) {
                 val alert = com.gocamping.data.Alert(
                     date = java.time.LocalDate.now().toString(),
@@ -255,9 +328,11 @@ fun StaffAlertContent(dao: com.gocamping.data.AppDao) {
                 dao.insertAlert(alert)
             }
         }, 
-        modifier = Modifier.fillMaxWidth()
+        modifier = Modifier.fillMaxWidth().height(56.dp),
+        shape = RoundedCornerShape(8.dp),
+        colors = ButtonDefaults.buttonColors(containerColor = CampingGreenHeader)
     ) {
-        Text("Broadcast Alert")
+        Text("Broadcast Alert", fontWeight = FontWeight.Bold)
     }
 }
 
@@ -273,19 +348,24 @@ fun ViewAlertContent(dao: com.gocamping.data.AppDao, role: String) {
         }
     }
 
-    Text("Current Alerts", style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold)
+    Text("Current Alerts", style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold, color = CampingTextDark)
     Spacer(modifier = Modifier.height(16.dp))
     
-    LazyColumn(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-        items(alerts) { alert ->
-            Card(
-                modifier = Modifier.fillMaxWidth(),
-                colors = CardDefaults.cardColors(containerColor = VividOrange.copy(alpha = 0.1f))
-            ) {
-                Column(modifier = Modifier.padding(16.dp)) {
-                    Text(alert.type, fontWeight = FontWeight.Bold, color = VividOrange)
-                    Text(alert.content)
-                    Text(alert.date, style = MaterialTheme.typography.bodySmall, color = Color.Gray)
+    if (alerts.isEmpty()) {
+        Text("No active alerts.", color = Color.Gray)
+    } else {
+        LazyColumn(verticalArrangement = Arrangement.spacedBy(12.dp), modifier = Modifier.heightIn(max = 500.dp)) {
+            items(alerts) { alert ->
+                Card(
+                    modifier = Modifier.fillMaxWidth(),
+                    shape = RoundedCornerShape(12.dp),
+                    colors = CardDefaults.cardColors(containerColor = VividOrange.copy(alpha = 0.1f))
+                ) {
+                    Column(modifier = Modifier.padding(16.dp)) {
+                        Text(alert.type, fontWeight = FontWeight.Bold, color = VividOrange)
+                        Text(alert.content, color = CampingTextDark)
+                        Text(alert.date, style = MaterialTheme.typography.bodySmall, color = Color.Gray)
+                    }
                 }
             }
         }
@@ -322,25 +402,30 @@ fun ParentPaymentContent(dao: com.gocamping.data.AppDao, userId: String, initial
         }
     }
 
-    Text("Make a Payment", style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold)
+    Text("Make a Payment", style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold, color = CampingTextDark)
     Spacer(modifier = Modifier.height(16.dp))
     
     OutlinedTextField(
         value = studentId,
         onValueChange = { studentId = it },
-        label = { Text("Student ID") },
-        modifier = Modifier.fillMaxWidth()
+        placeholder = { Text("Student ID") },
+        modifier = Modifier.fillMaxWidth(),
+        shape = RoundedCornerShape(8.dp)
     )
-    Spacer(modifier = Modifier.height(8.dp))
+    Spacer(modifier = Modifier.height(12.dp))
     OutlinedTextField(
         value = amount,
         onValueChange = { amount = it },
-        label = { Text("Amount ($)") },
-        modifier = Modifier.fillMaxWidth()
+        placeholder = { Text("Amount ($)") },
+        modifier = Modifier.fillMaxWidth(),
+        shape = RoundedCornerShape(8.dp)
     )
     
+    Spacer(modifier = Modifier.height(24.dp))
+
     Button(
         onClick = { 
+            if (amount.isBlank() || studentId.isBlank()) return@Button
             scope.launch(kotlinx.coroutines.Dispatchers.IO) {
                 val p = com.gocamping.data.Payment(
                     date = java.time.LocalDate.now().toString(),
@@ -352,17 +437,31 @@ fun ParentPaymentContent(dao: com.gocamping.data.AppDao, userId: String, initial
                 dao.insertPayment(p)
             }
         }, 
-        modifier = Modifier.fillMaxWidth()
+        modifier = Modifier.fillMaxWidth().height(56.dp),
+        shape = RoundedCornerShape(8.dp),
+        colors = ButtonDefaults.buttonColors(containerColor = CampingGreenHeader)
     ) {
-        Text("Pay Now")
+        Text("Pay Now", fontWeight = FontWeight.Bold)
     }
     
-    Spacer(modifier = Modifier.height(24.dp))
-    Text("Payment History", style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
-    LazyColumn(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+    Spacer(modifier = Modifier.height(32.dp))
+    Text("Payment History", style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold, color = CampingTextDark)
+    Spacer(modifier = Modifier.height(8.dp))
+    LazyColumn(verticalArrangement = Arrangement.spacedBy(8.dp), modifier = Modifier.heightIn(max = 300.dp)) {
         items(payments) { payment ->
-            Card(modifier = Modifier.fillMaxWidth()) {
-                Text("${payment.date}: $${payment.amount} for ${payment.studentId}", modifier = Modifier.padding(16.dp))
+            Card(
+                modifier = Modifier.fillMaxWidth(),
+                shape = RoundedCornerShape(12.dp),
+                colors = CardDefaults.cardColors(containerColor = Color.White),
+                elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
+            ) {
+                Row(modifier = Modifier.padding(16.dp), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
+                    Column {
+                        Text("Amount: $${payment.amount}", fontWeight = FontWeight.Bold, color = CampingGreenHeader)
+                        Text("For: ${payment.studentId}", style = MaterialTheme.typography.bodySmall)
+                    }
+                    Text(payment.date, style = MaterialTheme.typography.bodySmall, color = Color.Gray)
+                }
             }
         }
     }
@@ -380,13 +479,29 @@ fun StaffPaymentContent(dao: com.gocamping.data.AppDao) {
         }
     }
 
-    Text("Payment Monitoring", style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold)
+    Text("Payment Monitoring", style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold, color = CampingTextDark)
     Spacer(modifier = Modifier.height(16.dp))
     
-    LazyColumn(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-        items(records) { record ->
-            Card(modifier = Modifier.fillMaxWidth()) {
-                Text("User: ${record.parentId}, Std: ${record.studentId}, Amt: $${record.amount}", modifier = Modifier.padding(16.dp))
+    if (records.isEmpty()) {
+        Text("No payments found.", color = Color.Gray)
+    } else {
+        LazyColumn(verticalArrangement = Arrangement.spacedBy(12.dp), modifier = Modifier.heightIn(max = 500.dp)) {
+            items(records) { record ->
+                Card(
+                    modifier = Modifier.fillMaxWidth(),
+                    shape = RoundedCornerShape(12.dp),
+                    elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
+                    colors = CardDefaults.cardColors(containerColor = Color.White)
+                ) {
+                    Column(modifier = Modifier.padding(16.dp)) {
+                        Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
+                            Text("Student: ${record.studentId}", fontWeight = FontWeight.Bold, color = CampingTextDark)
+                            Text("$${record.amount}", fontWeight = FontWeight.Bold, color = CampingGreenHeader)
+                        }
+                        Text("Payer (Parent ID): ${record.parentId}", style = MaterialTheme.typography.bodySmall, color = Color.Gray)
+                        Text("Date: ${record.date}", style = MaterialTheme.typography.bodySmall, color = Color.Gray)
+                    }
+                }
             }
         }
     }
@@ -397,9 +512,9 @@ fun StaffPaymentContent(dao: com.gocamping.data.AppDao) {
 @Composable
 fun FeedbackScreen(role: String, userId: String, studentId: String?, dao: com.gocamping.data.AppDao, onBack: () -> Unit) {
     ModuleScreenBase("Camp Feedback", onBack) {
-        if (role.equals("Student", ignoreCase = true) || role.equals("Parent", ignoreCase = true)) {
-            SubmitFeedbackContent(dao, studentId ?: userId)
-        } else {
+        if (role.equals("Student", ignoreCase = true)) {
+            SubmitFeedbackContent(dao, userId)
+        } else if (role.equals("Staff", ignoreCase = true)) {
             StaffFeedbackContent(dao)
         }
     }
@@ -408,20 +523,38 @@ fun FeedbackScreen(role: String, userId: String, studentId: String?, dao: com.go
 @Composable
 fun SubmitFeedbackContent(dao: com.gocamping.data.AppDao, userId: String) {
     var feedback by remember { mutableStateOf("") }
+    var showSuccessDialog by remember { mutableStateOf(false) }
     val scope = rememberCoroutineScope()
     
-    Text("Give your Feedback", style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold)
+    if (showSuccessDialog) {
+        AlertDialog(
+            onDismissRequest = { },
+            title = { Text("Success") },
+            text = { Text("you hv submitted feedback") },
+            confirmButton = {
+                Button(onClick = { showSuccessDialog = false; feedback = "" }, colors = ButtonDefaults.buttonColors(containerColor = CampingGreenHeader)) {
+                    Text("OK")
+                }
+            }
+        )
+    }
+
+    Text("Give your Feedback", style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold, color = CampingTextDark)
     Spacer(modifier = Modifier.height(16.dp))
     
     OutlinedTextField(
         value = feedback,
         onValueChange = { feedback = it },
-        label = { Text("Your thoughts...") },
-        modifier = Modifier.fillMaxWidth().height(150.dp)
+        placeholder = { Text("Your thoughts...") },
+        modifier = Modifier.fillMaxWidth().height(150.dp),
+        shape = RoundedCornerShape(8.dp)
     )
     
+    Spacer(modifier = Modifier.height(24.dp))
+
     Button(
         onClick = { 
+            if (feedback.isBlank()) return@Button
             scope.launch(kotlinx.coroutines.Dispatchers.IO) {
                 val f = com.gocamping.data.Feedback(
                     studentId = userId,
@@ -429,11 +562,16 @@ fun SubmitFeedbackContent(dao: com.gocamping.data.AppDao, userId: String) {
                     date = java.time.LocalDate.now().toString()
                 )
                 dao.insertFeedback(f)
+                with(kotlinx.coroutines.Dispatchers.Main) {
+                    showSuccessDialog = true
+                }
             }
         }, 
-        modifier = Modifier.fillMaxWidth()
+        modifier = Modifier.fillMaxWidth().height(56.dp),
+        shape = RoundedCornerShape(8.dp),
+        colors = ButtonDefaults.buttonColors(containerColor = CampingGreenHeader)
     ) {
-        Text("Submit Feedback")
+        Text("Submit Feedback", fontWeight = FontWeight.Bold)
     }
 }
 
@@ -449,15 +587,29 @@ fun StaffFeedbackContent(dao: com.gocamping.data.AppDao) {
         }
     }
 
-    Text("Camper Feedback", style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold)
+    Text("Camper Feedback", style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold, color = CampingTextDark)
     Spacer(modifier = Modifier.height(16.dp))
     
-    LazyColumn(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-        items(feedbackList) { feedback ->
-            Card(modifier = Modifier.fillMaxWidth()) {
-                Column(modifier = Modifier.padding(16.dp)) {
-                    Text(feedback.content)
-                    Text("From: ${feedback.studentId} on ${feedback.date}", style = MaterialTheme.typography.bodySmall, color = Color.Gray)
+    if (feedbackList.isEmpty()) {
+        Text("No feedback received yet.", color = Color.Gray)
+    } else {
+        LazyColumn(verticalArrangement = Arrangement.spacedBy(12.dp), modifier = Modifier.heightIn(max = 500.dp)) {
+            items(feedbackList) { feedback ->
+                Card(
+                    modifier = Modifier.fillMaxWidth(),
+                    shape = RoundedCornerShape(12.dp),
+                    elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
+                    colors = CardDefaults.cardColors(containerColor = Color.White)
+                ) {
+                    Column(modifier = Modifier.padding(16.dp)) {
+                        Text(feedback.content, style = MaterialTheme.typography.bodyLarge, color = CampingTextDark)
+                        Spacer(modifier = Modifier.height(12.dp))
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                            Icon(Icons.Default.Person, contentDescription = null, modifier = Modifier.size(16.dp), tint = CampingGreenHeader)
+                            Text(" Student ID: ${feedback.studentId}", style = MaterialTheme.typography.bodySmall, color = CampingGreenHeader, fontWeight = FontWeight.Bold)
+                        }
+                        Text(feedback.date, style = MaterialTheme.typography.bodySmall, color = Color.Gray)
+                    }
                 }
             }
         }
@@ -470,10 +622,10 @@ fun StaffFeedbackContent(dao: com.gocamping.data.AppDao) {
 fun ArchivingScreen(dao: com.gocamping.data.AppDao, onBack: () -> Unit) {
     val scope = rememberCoroutineScope()
     ModuleScreenBase("Data Archiving", onBack) {
-        Text("Archive Records", style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold)
-        Text("Preserve important data while cleaning up the active view.", style = MaterialTheme.typography.bodyMedium)
+        Text("Archive Records", style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold, color = CampingTextDark)
+        Text("Preserve important data while cleaning up the active view.", style = MaterialTheme.typography.bodyMedium, color = Color.Gray)
         
-        Spacer(modifier = Modifier.height(32.dp))
+        Spacer(modifier = Modifier.height(48.dp))
         
         Button(
             onClick = { 
@@ -481,32 +633,35 @@ fun ArchivingScreen(dao: com.gocamping.data.AppDao, onBack: () -> Unit) {
                     dao.archiveAllAttendance()
                 }
             }, 
-            modifier = Modifier.fillMaxWidth(), 
+            modifier = Modifier.fillMaxWidth().height(56.dp), 
+            shape = RoundedCornerShape(8.dp),
             colors = ButtonDefaults.buttonColors(containerColor = ErrorRed)
         ) {
-            Text("Archive All Attendance")
+            Text("Archive All Attendance", fontWeight = FontWeight.Bold)
         }
-        Spacer(modifier = Modifier.height(12.dp))
+        Spacer(modifier = Modifier.height(16.dp))
         Button(
             onClick = { 
                 scope.launch(kotlinx.coroutines.Dispatchers.IO) {
                     dao.archiveAllPayments()
                 }
             }, 
-            modifier = Modifier.fillMaxWidth(), 
+            modifier = Modifier.fillMaxWidth().height(56.dp), 
+            shape = RoundedCornerShape(8.dp),
             colors = ButtonDefaults.buttonColors(containerColor = ErrorRed)
         ) {
-            Text("Archive Completed Payments")
+            Text("Archive Completed Payments", fontWeight = FontWeight.Bold)
         }
-        Spacer(modifier = Modifier.height(12.dp))
+        Spacer(modifier = Modifier.height(16.dp))
         Button(
             onClick = { 
                 // Alerts archiving not in DFD specifically but in 'Cleanup' requirement
             }, 
-            modifier = Modifier.fillMaxWidth(), 
+            modifier = Modifier.fillMaxWidth().height(56.dp), 
+            shape = RoundedCornerShape(8.dp),
             colors = ButtonDefaults.buttonColors(containerColor = Color.Gray)
         ) {
-            Text("Clear System Cache")
+            Text("Clear System Cache", fontWeight = FontWeight.Bold)
         }
     }
 }
