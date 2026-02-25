@@ -371,7 +371,7 @@ fun RegistrationFormBase(
                                 // Check if user exists
                                 val existingUser = dao.getUserById(trimmedId)
                                 if (existingUser != null) {
-                                    with(kotlinx.coroutines.Dispatchers.Main) {
+                                    withContext(kotlinx.coroutines.Dispatchers.Main) {
                                         errorMessage = "Account with this ID already exists"
                                     }
                                     return@launch
@@ -380,7 +380,7 @@ fun RegistrationFormBase(
                                 // Role specific validation
                                 val specificError = validateSpecific?.invoke()
                                 if (specificError != null) {
-                                    with(kotlinx.coroutines.Dispatchers.Main) {
+                                    withContext(kotlinx.coroutines.Dispatchers.Main) {
                                         errorMessage = specificError
                                     }
                                     return@launch
@@ -396,11 +396,11 @@ fun RegistrationFormBase(
                                     roleSpecific2 = roleSpecific2
                                 )
                                 dao.insertUser(user)
-                                with(kotlinx.coroutines.Dispatchers.Main) {
+                                withContext(kotlinx.coroutines.Dispatchers.Main) {
                                     showSuccessDialog = true
                                 }
                             } catch (e: Exception) {
-                                with(kotlinx.coroutines.Dispatchers.Main) {
+                                withContext(kotlinx.coroutines.Dispatchers.Main) {
                                     errorMessage = "Error: ${e.message}"
                                 }
                             }

@@ -206,17 +206,17 @@ fun LoginScreen(
                             try {
                                 val user = dao.login(trimmedId, trimmedPassword)
                                 if (user != null && user.role.equals(selectedRole, ignoreCase = true)) {
-                                    with(kotlinx.coroutines.Dispatchers.Main) {
+                                    withContext(kotlinx.coroutines.Dispatchers.Main) {
                                         onNavigateToDashboard(user.role, user.id, user.roleSpecific1 ?: "")
                                     }
                                 } else {
-                                    with(kotlinx.coroutines.Dispatchers.Main) {
+                                    withContext(kotlinx.coroutines.Dispatchers.Main) {
                                         showError = true
                                         errorMessage = "Invalid ID, password, or role"
                                     }
                                 }
                             } catch (e: Exception) {
-                                with(kotlinx.coroutines.Dispatchers.Main) {
+                                withContext(kotlinx.coroutines.Dispatchers.Main) {
                                     showError = true
                                     errorMessage = "Error: ${e.message}"
                                 }
