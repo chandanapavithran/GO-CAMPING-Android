@@ -169,8 +169,8 @@ fun DashboardBase(title: String, onLogout: () -> Unit, content: LazyListScope.()
 @Composable
 fun HeaderSection(title: String, subtitle: String) {
     Column(modifier = Modifier.padding(bottom = 8.dp)) {
-        Text(title, style = MaterialTheme.typography.headlineSmall, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onBackground)
-        Text(subtitle, style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
+        Text(title, style = MaterialTheme.typography.headlineSmall, fontWeight = FontWeight.Bold, color = Color.Black)
+        Text(subtitle, style = MaterialTheme.typography.bodyMedium, color = Color.Gray)
     }
 }
 

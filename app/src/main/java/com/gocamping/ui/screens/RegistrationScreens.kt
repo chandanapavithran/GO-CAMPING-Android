@@ -225,7 +225,7 @@ fun RegistrationFormBase(
     }
 
     Box(
-        modifier = Modifier.fillMaxSize()
+        modifier = Modifier.fillMaxSize().background(Color.White)
     ) {
         // Bottom Wave (Moved to background)
         Image(

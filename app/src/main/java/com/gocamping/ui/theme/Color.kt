@@ -14,7 +14,7 @@ val SuccessGreen = Color(0xFF00C853)
 val ErrorRed = Color(0xFFFF5252)
 
 // Background and Surface
-val BackgroundLight = Color(0xFFFFFBFE)
+val BackgroundLight = Color(0xFFFFFFFF)
 val BackgroundDark = Color(0xFF1C1B1F)
 val SurfaceLight = Color(0xFFFFFFFF)
 val SurfaceDark = Color(0xFF252429)
@@ -23,6 +23,6 @@ val SurfaceDark = Color(0xFF252429)
 val CampingGreen = Color(0xFF2E7D32)
 val CampingIvory = Color(0xFFFFFFFF)
 val CampingGreenHeader = Color(0xFF1B5E20)
-val CampingTextDark = Color(0xFF1B4332)
+val CampingTextDark = Color(0xFF000000)
 val ForestGreenDeep = Color(0xFF084D0E)
 

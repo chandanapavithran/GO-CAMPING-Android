@@ -29,12 +29,12 @@ private val LightColorScheme = lightColorScheme(
     primary = CampingGreen,
     secondary = CampingGreenHeader,
     background = Color.White,
-    surface = SurfaceLight,
+    surface = Color.White,
     onPrimary = Color.White,
     onSecondary = Color.White,
     onTertiary = Color.White,
-    onBackground = CampingTextDark,
-    onSurface = CampingTextDark,
+    onBackground = Color.Black,
+    onSurface = Color.Black,
     error = ErrorRed
 )
 

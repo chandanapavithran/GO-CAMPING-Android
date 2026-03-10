@@ -20,6 +20,36 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
         setContent {
+            val context = androidx.compose.ui.platform.LocalContext.current
+            androidx.compose.runtime.LaunchedEffect(Unit) {
+                val db = com.gocamping.data.AppDatabase.getDatabase(context)
+                val dao = db.appDao()
+                kotlinx.coroutines.withContext(kotlinx.coroutines.Dispatchers.IO) {
+                    // Seed a student user if not exists
+                    if (dao.getUserById("STUDENT001") == null) {
+                        dao.insertUser(com.gocamping.data.User(
+                            id = "STUDENT001",
+                            name = "Test Student",
+                            role = "Student",
+                            contactNo = "1234567890",
+                            password = "password",
+                            roleSpecific1 = "Class 10",
+                            roleSpecific2 = "Main St"
+                        ))
+                    }
+                    // Seed a staff user if not exists
+                    if (dao.getUserById("STAFF001") == null) {
+                        dao.insertUser(com.gocamping.data.User(
+                            id = "STAFF001",
+                            name = "Test Staff",
+                            role = "Staff",
+                            contactNo = "0987654321",
+                            password = "password",
+                            roleSpecific1 = "Management"
+                        ))
+                    }
+                }
+            }
             CampingTheme {
                 Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
                     Box(modifier = Modifier.padding(innerPadding)) {
