@@ -21,7 +21,7 @@ val SurfaceDark = Color(0xFF252429)
 
 // Camping Design Colors
 val CampingGreen = Color(0xFF2E7D32)
-val CampingIvory = Color(0xFFFDFCF0)
+val CampingIvory = Color(0xFFFFFFFF)
 val CampingGreenHeader = Color(0xFF1B5E20)
 val CampingTextDark = Color(0xFF1B4332)
 val ForestGreenDeep = Color(0xFF084D0E)

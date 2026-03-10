@@ -36,14 +36,7 @@ fun RegisterTypeScreen(onNavigateToRegister: (String) -> Unit, onNavigateBack: (
     Box(
         modifier = Modifier
             .fillMaxSize()
-            .background(
-                brush = Brush.verticalGradient(
-                    colors = listOf(
-                        MaterialTheme.colorScheme.primary,
-                        MaterialTheme.colorScheme.secondary
-                    )
-                )
-            )
+            .background(Color.White)
     ) {
         Card(
             modifier = Modifier
