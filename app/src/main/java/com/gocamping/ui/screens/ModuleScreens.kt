@@ -589,6 +589,46 @@ fun ParentPaymentContent(dao: com.gocamping.data.AppDao, userId: String, initial
         }
     }
 
+    val upiLauncher = androidx.activity.compose.rememberLauncherForActivityResult(
+        contract = androidx.activity.result.contract.ActivityResultContracts.StartActivityForResult()
+    ) { result ->
+        // Standard UPI apps return a string formatted as "txnId=...&Status=SUCCESS&..." inside the "response" extra
+        val data = result.data?.getStringExtra("response") ?: ""
+        val isSuccess = data.contains("Status=SUCCESS", ignoreCase = true) || 
+                        data.contains("Status=Success", ignoreCase = true) || 
+                        data.contains("txnId=") // Fallback if some apps just return txnId but omit status keyword
+                        
+        if (isSuccess || result.resultCode == android.app.Activity.RESULT_OK) {
+            val amountVal = amount.toDoubleOrNull()
+            if (amountVal != null && amountVal > 0 && studentId.isNotBlank()) {
+                scope.launch(kotlinx.coroutines.Dispatchers.IO) {
+                    try {
+                        val p = com.gocamping.data.Payment(
+                            date = java.time.LocalDate.now().toString(),
+                            studentId = studentId,
+                            parentId = userId,
+                            amount = amountVal,
+                            status = "Completed"
+                        )
+                        dao.insertPayment(p)
+                        val updatedList = dao.getPaymentsForParent(userId)
+                        withContext(kotlinx.coroutines.Dispatchers.Main) {
+                            payments.clear()
+                            payments.addAll(updatedList)
+                            showDialog = true
+                            amount = ""
+                        }
+                    } catch (e: Exception) {
+                        withContext(kotlinx.coroutines.Dispatchers.Main) { showDialog = false }
+                    }
+                }
+            }
+        } else {
+            // Cancelled or Failed
+            showDialog = false
+        }
+    }
+
     if (showDialog != null) {
         AlertDialog(
             onDismissRequest = { showDialog = null },
@@ -626,7 +666,11 @@ fun ParentPaymentContent(dao: com.gocamping.data.AppDao, userId: String, initial
     Spacer(modifier = Modifier.height(12.dp))
     OutlinedTextField(
         value = amount,
-        onValueChange = { amount = it },
+        onValueChange = { 
+            if (it.all { char -> char.isDigit() }) {
+                amount = it
+            }
+        },
         placeholder = { Text("Enter Amount") },
         modifier = Modifier.fillMaxWidth(),
         shape = RoundedCornerShape(8.dp),
@@ -650,29 +694,39 @@ fun ParentPaymentContent(dao: com.gocamping.data.AppDao, userId: String, initial
                 showDialog = false
                 return@Button
             }
-            scope.launch(kotlinx.coroutines.Dispatchers.IO) {
-                try {
-                    val p = com.gocamping.data.Payment(
-                        date = java.time.LocalDate.now().toString(),
-                        studentId = studentId,
-                        parentId = userId,
-                        amount = amountVal,
-                        status = "Completed"
-                    )
-                    dao.insertPayment(p)
-                    
-                    // Refresh list
-                    val updatedList = dao.getPaymentsForParent(userId)
-                    
-                    withContext(kotlinx.coroutines.Dispatchers.Main) {
-                        payments.clear()
-                        payments.addAll(updatedList)
-                        showDialog = true
-                        amount = ""
-                    }
-                } catch (e: Exception) {
-                    withContext(kotlinx.coroutines.Dispatchers.Main) {
-                        showDialog = false
+            
+            val uri = android.net.Uri.parse("upi://pay").buildUpon()
+                .appendQueryParameter("pa", "test@upi")
+                .appendQueryParameter("pn", "GoCamping")
+                .appendQueryParameter("am", amountVal.toString())
+                .appendQueryParameter("cu", "INR")
+                .build()
+                
+            val intent = android.content.Intent(android.content.Intent.ACTION_VIEW, uri)
+            val chooser = android.content.Intent.createChooser(intent, "Pay with UPI")
+            
+            try {
+                upiLauncher.launch(chooser)
+            } catch (e: android.content.ActivityNotFoundException) {
+                scope.launch(kotlinx.coroutines.Dispatchers.IO) {
+                    try {
+                        val p = com.gocamping.data.Payment(
+                            date = java.time.LocalDate.now().toString(),
+                            studentId = studentId,
+                            parentId = userId,
+                            amount = amountVal,
+                            status = "Completed"
+                        )
+                        dao.insertPayment(p)
+                        val updatedList = dao.getPaymentsForParent(userId)
+                        withContext(kotlinx.coroutines.Dispatchers.Main) {
+                            payments.clear()
+                            payments.addAll(updatedList)
+                            showDialog = true
+                            amount = ""
+                        }
+                    } catch (e: Exception) {
+                        withContext(kotlinx.coroutines.Dispatchers.Main) { showDialog = false }
                     }
                 }
             }
