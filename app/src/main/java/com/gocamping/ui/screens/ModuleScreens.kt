@@ -383,6 +383,29 @@ fun StaffAlertContent(dao: com.gocamping.data.AppDao) {
     var showSuccessDialog by remember { mutableStateOf(false) }
     var message by remember { mutableStateOf<String?>(null) }
     val scope = rememberCoroutineScope()
+    val context = androidx.compose.ui.platform.LocalContext.current
+    
+    val permissionLauncher = androidx.activity.compose.rememberLauncherForActivityResult(
+        contract = androidx.activity.result.contract.ActivityResultContracts.RequestPermission()
+    ) { isGranted -> }
+
+    LaunchedEffect(Unit) {
+        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O) {
+            val channel = android.app.NotificationChannel(
+                "alert_channel",
+                "Alerts",
+                android.app.NotificationManager.IMPORTANCE_HIGH
+            )
+            val manager = context.getSystemService(android.app.NotificationManager::class.java)
+            manager?.createNotificationChannel(channel)
+        }
+        
+        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.TIRAMISU) {
+            if (androidx.core.content.ContextCompat.checkSelfPermission(context, android.Manifest.permission.POST_NOTIFICATIONS) != android.content.pm.PackageManager.PERMISSION_GRANTED) {
+                permissionLauncher.launch(android.Manifest.permission.POST_NOTIFICATIONS)
+            }
+        }
+    }
 
     if (showSuccessDialog) {
         AlertDialog(
@@ -498,6 +521,22 @@ fun StaffAlertContent(dao: com.gocamping.data.AppDao) {
                     dao.insertAlert(alert)
                     withContext(kotlinx.coroutines.Dispatchers.Main) {
                         showSuccessDialog = true
+                        
+                        try {
+                            val builder = androidx.core.app.NotificationCompat.Builder(context, "alert_channel")
+                                .setSmallIcon(android.R.drawable.ic_dialog_info)
+                                .setContentTitle("New Alert: $targetGroup")
+                                .setContentText(alertText)
+                                .setPriority(androidx.core.app.NotificationCompat.PRIORITY_HIGH)
+
+                            val manager = androidx.core.app.NotificationManagerCompat.from(context)
+                            if (androidx.core.content.ContextCompat.checkSelfPermission(context, android.Manifest.permission.POST_NOTIFICATIONS) == android.content.pm.PackageManager.PERMISSION_GRANTED) {
+                                manager.notify(System.currentTimeMillis().toInt(), builder.build())
+                            }
+                        } catch (e: Exception) {
+                            // Ignore notification failures on some emulators
+                        }
+                        
                         alertText = ""
                         message = null
                     }
