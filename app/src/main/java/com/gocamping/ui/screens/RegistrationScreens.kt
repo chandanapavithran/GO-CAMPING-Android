@@ -13,6 +13,7 @@ import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.PasswordVisualTransformation
+import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.unit.dp
 import com.gocamping.ui.theme.*
 import kotlinx.coroutines.launch
@@ -29,6 +30,8 @@ import androidx.compose.ui.unit.sp
 import com.gocamping.ui.theme.CampingGreenHeader
 import com.gocamping.ui.theme.CampingTextDark
 import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.icons.filled.Visibility
+import androidx.compose.material.icons.filled.VisibilityOff
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -201,6 +204,7 @@ fun RegistrationFormBase(
     var name by remember { mutableStateOf("") }
     var contact by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
+    var passwordVisible by remember { mutableStateOf(false) }
     var errorMessage by remember { mutableStateOf<String?>(null) }
     var showSuccessDialog by remember { mutableStateOf(false) }
     
@@ -307,7 +311,11 @@ fun RegistrationFormBase(
                     shape = RoundedCornerShape(8.dp),
                     colors = OutlinedTextFieldDefaults.colors(
                         focusedBorderColor = Color.LightGray,
-                        unfocusedBorderColor = Color.LightGray
+                        unfocusedBorderColor = Color.LightGray,
+                        focusedTextColor = Color.Black,
+                        unfocusedTextColor = Color.Black,
+                        focusedLabelColor = Color.Black,
+                        unfocusedLabelColor = Color.Black
                     )
                 )
                 Spacer(modifier = Modifier.height(12.dp))
@@ -319,7 +327,11 @@ fun RegistrationFormBase(
                     shape = RoundedCornerShape(8.dp),
                     colors = OutlinedTextFieldDefaults.colors(
                         focusedBorderColor = Color.LightGray,
-                        unfocusedBorderColor = Color.LightGray
+                        unfocusedBorderColor = Color.LightGray,
+                        focusedTextColor = Color.Black,
+                        unfocusedTextColor = Color.Black,
+                        focusedLabelColor = Color.Black,
+                        unfocusedLabelColor = Color.Black
                     )
                 )
                 Spacer(modifier = Modifier.height(12.dp))
@@ -331,7 +343,11 @@ fun RegistrationFormBase(
                     shape = RoundedCornerShape(8.dp),
                     colors = OutlinedTextFieldDefaults.colors(
                         focusedBorderColor = Color.LightGray,
-                        unfocusedBorderColor = Color.LightGray
+                        unfocusedBorderColor = Color.LightGray,
+                        focusedTextColor = Color.Black,
+                        unfocusedTextColor = Color.Black,
+                        focusedLabelColor = Color.Black,
+                        unfocusedLabelColor = Color.Black
                     )
                 )
                 Spacer(modifier = Modifier.height(12.dp))
@@ -339,12 +355,24 @@ fun RegistrationFormBase(
                     value = password,
                     onValueChange = { password = it; errorMessage = null },
                     label = { Text("Password") },
-                    visualTransformation = PasswordVisualTransformation(),
+                    visualTransformation = if (passwordVisible) VisualTransformation.None else PasswordVisualTransformation(),
+                    trailingIcon = {
+                        IconButton(onClick = { passwordVisible = !passwordVisible }) {
+                            Icon(
+                                imageVector = if (passwordVisible) Icons.Filled.Visibility else Icons.Filled.VisibilityOff,
+                                contentDescription = if (passwordVisible) "Hide password" else "Show password"
+                            )
+                        }
+                    },
                     modifier = Modifier.fillMaxWidth(),
                     shape = RoundedCornerShape(8.dp),
                     colors = OutlinedTextFieldDefaults.colors(
                         focusedBorderColor = Color.LightGray,
-                        unfocusedBorderColor = Color.LightGray
+                        unfocusedBorderColor = Color.LightGray,
+                        focusedTextColor = Color.Black,
+                        unfocusedTextColor = Color.Black,
+                        focusedLabelColor = Color.Black,
+                        unfocusedLabelColor = Color.Black
                     )
                 )
                 
@@ -357,6 +385,16 @@ fun RegistrationFormBase(
                         val trimmedId = id.trim()
                         if (trimmedId.isBlank() || name.isBlank() || contact.isBlank() || password.isBlank()) {
                             errorMessage = "All fields are required"
+                            return@Button
+                        }
+                        
+                        if (name.any { it.isDigit() }) {
+                            errorMessage = "Full name shouldn't contain numbers"
+                            return@Button
+                        }
+                        
+                        if (contact.length != 10 || !contact.all { it.isDigit() }) {
+                            errorMessage = "Contact number must be exactly 10 digits"
                             return@Button
                         }
                         
@@ -445,7 +483,11 @@ fun StandardRegistrationFields(
             shape = RoundedCornerShape(8.dp),
             colors = OutlinedTextFieldDefaults.colors(
                 focusedBorderColor = Color.LightGray,
-                unfocusedBorderColor = Color.LightGray
+                unfocusedBorderColor = Color.LightGray,
+                focusedTextColor = Color.Black,
+                unfocusedTextColor = Color.Black,
+                focusedLabelColor = Color.Black,
+                unfocusedLabelColor = Color.Black
             )
         )
     }
@@ -460,7 +502,11 @@ fun StandardRegistrationFields(
             shape = RoundedCornerShape(8.dp),
             colors = OutlinedTextFieldDefaults.colors(
                 focusedBorderColor = Color.LightGray,
-                unfocusedBorderColor = Color.LightGray
+                unfocusedBorderColor = Color.LightGray,
+                focusedTextColor = Color.Black,
+                unfocusedTextColor = Color.Black,
+                focusedLabelColor = Color.Black,
+                unfocusedLabelColor = Color.Black
             )
         )
     }

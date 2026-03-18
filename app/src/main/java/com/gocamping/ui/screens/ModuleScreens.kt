@@ -171,7 +171,11 @@ fun StaffAttendanceContent(dao: com.gocamping.data.AppDao) {
         shape = RoundedCornerShape(8.dp),
         colors = OutlinedTextFieldDefaults.colors(
             focusedBorderColor = Color.LightGray,
-            unfocusedBorderColor = Color.LightGray
+            unfocusedBorderColor = Color.LightGray,
+            focusedTextColor = Color.Black,
+            unfocusedTextColor = Color.Black,
+            focusedLabelColor = Color.Black,
+            unfocusedLabelColor = Color.Black
         ),
         enabled = false // Make the field clickable but not typeable
     )
@@ -431,7 +435,11 @@ fun StaffAlertContent(dao: com.gocamping.data.AppDao) {
         shape = RoundedCornerShape(8.dp),
         colors = OutlinedTextFieldDefaults.colors(
             focusedBorderColor = Color.LightGray,
-            unfocusedBorderColor = Color.LightGray
+            unfocusedBorderColor = Color.LightGray,
+            focusedTextColor = Color.Black,
+            unfocusedTextColor = Color.Black,
+            focusedLabelColor = Color.Black,
+            unfocusedLabelColor = Color.Black
         ),
         enabled = false
     )
@@ -446,7 +454,11 @@ fun StaffAlertContent(dao: com.gocamping.data.AppDao) {
         shape = RoundedCornerShape(8.dp),
         colors = OutlinedTextFieldDefaults.colors(
             focusedBorderColor = CampingGreenHeader,
-            unfocusedBorderColor = Color.LightGray
+            unfocusedBorderColor = Color.LightGray,
+            focusedTextColor = Color.Black,
+            unfocusedTextColor = Color.Black,
+            focusedLabelColor = Color.Black,
+            unfocusedLabelColor = Color.Black
         )
     )
     
@@ -604,7 +616,11 @@ fun ParentPaymentContent(dao: com.gocamping.data.AppDao, userId: String, initial
         shape = RoundedCornerShape(8.dp),
         colors = OutlinedTextFieldDefaults.colors(
             focusedBorderColor = CampingGreenHeader,
-            unfocusedBorderColor = Color.LightGray
+            unfocusedBorderColor = Color.LightGray,
+            focusedTextColor = Color.Black,
+            unfocusedTextColor = Color.Black,
+            focusedLabelColor = Color.Black,
+            unfocusedLabelColor = Color.Black
         )
     )
     Spacer(modifier = Modifier.height(12.dp))
@@ -616,7 +632,11 @@ fun ParentPaymentContent(dao: com.gocamping.data.AppDao, userId: String, initial
         shape = RoundedCornerShape(8.dp),
         colors = OutlinedTextFieldDefaults.colors(
             focusedBorderColor = CampingGreenHeader,
-            unfocusedBorderColor = Color.LightGray
+            unfocusedBorderColor = Color.LightGray,
+            focusedTextColor = Color.Black,
+            unfocusedTextColor = Color.Black,
+            focusedLabelColor = Color.Black,
+            unfocusedLabelColor = Color.Black
         ),
         keyboardOptions = androidx.compose.foundation.text.KeyboardOptions(keyboardType = androidx.compose.ui.text.input.KeyboardType.Number)
     )
