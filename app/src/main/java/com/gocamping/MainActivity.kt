@@ -51,8 +51,11 @@ class MainActivity : ComponentActivity() {
                 }
             }
             CampingTheme {
-                Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
-                    Box(modifier = Modifier.padding(innerPadding)) {
+                Scaffold(
+                    modifier = Modifier.fillMaxSize(),
+                    containerColor = androidx.compose.ui.graphics.Color.White
+                ) { innerPadding ->
+                    Box(modifier = Modifier.padding(innerPadding).fillMaxSize().androidx.compose.foundation.background(androidx.compose.ui.graphics.Color.White)) {
                         AppNavigation()
                     }
                 }

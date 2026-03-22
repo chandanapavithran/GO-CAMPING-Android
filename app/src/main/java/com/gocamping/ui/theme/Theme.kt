@@ -20,8 +20,13 @@ private val DarkColorScheme = darkColorScheme(
     primary = ElectricPurple,
     secondary = BrightCyan,
     tertiary = SoftPink,
-    background = BackgroundDark,
-    surface = SurfaceDark,
+    background = Color.White,
+    surface = Color.White,
+    onPrimary = Color.White,
+    onSecondary = Color.White,
+    onTertiary = Color.White,
+    onBackground = Color.Black,
+    onSurface = Color.Black,
     error = ErrorRed
 )
 

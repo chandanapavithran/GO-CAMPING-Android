@@ -140,7 +140,7 @@ fun StaffAttendanceContent(dao: com.gocamping.data.AppDao) {
         val datePickerState = rememberDatePickerState()
         DatePickerDialog(
             onDismissRequest = { showDatePicker = false },
-            colors = androidx.compose.material3.DatePickerDefaults.colors(containerColor = Color.black),
+            colors = androidx.compose.material3.DatePickerDefaults.colors(containerColor = Color.Black),
             confirmButton = {
                 TextButton(onClick = {
                     datePickerState.selectedDateMillis?.let {
