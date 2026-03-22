@@ -140,6 +140,7 @@ fun StaffAttendanceContent(dao: com.gocamping.data.AppDao) {
         val datePickerState = rememberDatePickerState()
         DatePickerDialog(
             onDismissRequest = { showDatePicker = false },
+            colors = androidx.compose.material3.DatePickerDefaults.colors(containerColor = Color.black),
             confirmButton = {
                 TextButton(onClick = {
                     datePickerState.selectedDateMillis?.let {
@@ -147,10 +148,28 @@ fun StaffAttendanceContent(dao: com.gocamping.data.AppDao) {
                         selectedDate = instant.atZone(java.time.ZoneId.systemDefault()).toLocalDate().toString()
                     }
                     showDatePicker = false
-                }) { Text("OK") }
+                }) { Text("OK", color = Color.Black) }
             }
         ) {
-            DatePicker(state = datePickerState)
+            DatePicker(
+                state = datePickerState,
+                colors = androidx.compose.material3.DatePickerDefaults.colors(
+                    containerColor = Color.White,
+                    titleContentColor = Color.Black,
+                    headlineContentColor = Color.Black,
+                    weekdayContentColor = Color.Black,
+                    subheadContentColor = Color.Black,
+                    yearContentColor = Color.Black,
+                    currentYearContentColor = Color.Black,
+                    selectedYearContentColor = Color.White,
+                    selectedYearContainerColor = CampingGreenHeader,
+                    dayContentColor = Color.Black,
+                    selectedDayContentColor = Color.White,
+                    selectedDayContainerColor = CampingGreenHeader,
+                    todayContentColor = CampingGreenHeader,
+                    todayDateBorderColor = CampingGreenHeader
+                )
+            )
         }
     }
 
@@ -427,6 +446,7 @@ fun StaffAlertContent(dao: com.gocamping.data.AppDao) {
         val datePickerState = rememberDatePickerState()
         DatePickerDialog(
             onDismissRequest = { showDatePicker = false },
+            colors = androidx.compose.material3.DatePickerDefaults.colors(containerColor = Color.White),
             confirmButton = {
                 TextButton(onClick = {
                     datePickerState.selectedDateMillis?.let {
@@ -434,10 +454,28 @@ fun StaffAlertContent(dao: com.gocamping.data.AppDao) {
                         selectedDate = instant.atZone(java.time.ZoneId.systemDefault()).toLocalDate().toString()
                     }
                     showDatePicker = false
-                }) { Text("OK") }
+                }) { Text("OK", color = Color.Black) }
             }
         ) {
-            DatePicker(state = datePickerState)
+            DatePicker(
+                state = datePickerState,
+                colors = androidx.compose.material3.DatePickerDefaults.colors(
+                    containerColor = Color.White,
+                    titleContentColor = Color.Black,
+                    headlineContentColor = Color.Black,
+                    weekdayContentColor = Color.Black,
+                    subheadContentColor = Color.Black,
+                    yearContentColor = Color.Black,
+                    currentYearContentColor = Color.Black,
+                    selectedYearContentColor = Color.White,
+                    selectedYearContainerColor = CampingGreenHeader,
+                    dayContentColor = Color.Black,
+                    selectedDayContentColor = Color.White,
+                    selectedDayContainerColor = CampingGreenHeader,
+                    todayContentColor = CampingGreenHeader,
+                    todayDateBorderColor = CampingGreenHeader
+                )
+            )
         }
     }
 
@@ -735,7 +773,7 @@ fun ParentPaymentContent(dao: com.gocamping.data.AppDao, userId: String, initial
             }
             
             val uri = android.net.Uri.parse("upi://pay").buildUpon()
-                .appendQueryParameter("pa", "test@upi")
+                .appendQueryParameter("pa", "chandanapavithran120@oksbi")
                 .appendQueryParameter("pn", "GoCamping")
                 .appendQueryParameter("am", amountVal.toString())
                 .appendQueryParameter("cu", "INR")

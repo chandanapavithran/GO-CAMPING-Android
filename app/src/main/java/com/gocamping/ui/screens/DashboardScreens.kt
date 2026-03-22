@@ -158,7 +158,7 @@ fun DashboardBase(title: String, onLogout: () -> Unit, content: LazyListScope.()
             modifier = Modifier
                 .fillMaxSize()
                 .padding(padding)
-                .background(MaterialTheme.colorScheme.background),
+                .background(Color.White),
             contentPadding = PaddingValues(20.dp),
             verticalArrangement = Arrangement.spacedBy(16.dp),
             content = content
@@ -180,7 +180,7 @@ fun DashboardCard(title: String, icon: ImageVector, description: String, iconCol
         modifier = Modifier.fillMaxWidth().clickable { onClick() },
         shape = RoundedCornerShape(16.dp),
         elevation = CardDefaults.cardElevation(defaultElevation = 4.dp),
-        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface)
+        colors = CardDefaults.cardColors(containerColor = Color.White)
     ) {
         Row(
             modifier = Modifier.padding(20.dp),
@@ -198,7 +198,7 @@ fun DashboardCard(title: String, icon: ImageVector, description: String, iconCol
             Spacer(modifier = Modifier.width(20.dp))
             Column {
                 Text(title, style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
-                Text(description, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                Text(description, style = MaterialTheme.typography.bodySmall, color = Color.Gray)
             }
         }
     }
