@@ -398,6 +398,12 @@ fun RegistrationFormBase(
                             return@Button
                         }
                         
+                        val specialCharRegex = Regex("[!@#\\\$%^&*()_+\\-=\\[\\]{};':\"\\\\|,.<>\\/?]")
+                        if (password.length < 8 || !specialCharRegex.containsMatchIn(password)) {
+                            errorMessage = "Password must be at least 8 characters and contain at least one special character"
+                            return@Button
+                        }
+                        
                         scope.launch(kotlinx.coroutines.Dispatchers.IO) {
                             try {
                                 // Check if user exists
